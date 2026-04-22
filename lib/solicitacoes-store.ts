@@ -116,7 +116,7 @@ export interface SolicitacaoInventario {
   setor?: string;
   solicitante: string;
   matricula: string;
-  termoResponsabilidade?: boolean;
+  salaResponsavel?: string;
   assinatura?: string;
   ano: string;
   itens: InventarioItem[];

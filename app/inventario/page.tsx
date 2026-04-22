@@ -24,7 +24,7 @@ export default function InventarioPage() {
   const [solicitante, setSolicitante] = useState("");
   const [matricula, setMatricula] = useState("");
   const [ano, setAno] = useState(new Date().getFullYear().toString());
-  const [termoResponsabilidade, setTermoResponsabilidade] = useState(false);
+  const [salaResponsavel, setSalaResponsavel] = useState("");
   const [enviado, setEnviado] = useState(false);
   const [pdfInventarioBaixado, setPdfInventarioBaixado] = useState(false);
   const [itensInventario, setItensInventario] = useState<InventarioItem[]>([
@@ -151,9 +151,9 @@ export default function InventarioPage() {
   };
 
   const handleEnviarInventario = () => {
-    if (!escola || !solicitante || !matricula || !termoResponsabilidade) {
-      alert("Por favor, preencha todos os campos obrigatorios e aceite o termo de responsabilidade.");
-      return;
+  if (!escola || !solicitante || !matricula || !salaResponsavel) {
+  alert("Por favor, preencha todos os campos obrigatorios.");
+  return;
     }
 
     const itensPreenchidos = itensInventario.filter((item) => item.numeroPlaca || item.caracteristica);
@@ -162,14 +162,13 @@ export default function InventarioPage() {
       return;
     }
 
-    addInventario({
-      escola,
-      secretaria,
-      solicitante,
-      matricula,
-      termoResponsabilidade,
-      ano,
-      itens: itensPreenchidos,
+  addInventario({
+  instituicao: escola,
+  solicitante,
+  matricula,
+  salaResponsavel,
+  ano,
+  itens: itensPreenchidos,
     });
 
     setEnviado(true);
@@ -452,16 +451,14 @@ export default function InventarioPage() {
                       <label className="block text-sm text-[#475569]">Matricula *</label>
                       <Input value={matricula} onChange={(e) => setMatricula(e.target.value)} placeholder="Sua matricula" className="h-11 text-sm border-[#e2e8f0] bg-white placeholder:text-[#94a3b8]" />
                     </div>
-                    <div className="flex items-end pb-2">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input 
-                          type="checkbox" 
-                          checked={termoResponsabilidade} 
-                          onChange={(e) => setTermoResponsabilidade(e.target.checked)} 
-                          className="w-4 h-4 rounded border-[#e2e8f0] text-[#111c44] focus:ring-[#111c44]"
-                        />
-                        <span className="text-sm text-[#475569]">Sala Responsavel *</span>
-                      </label>
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-[#475569]">Sala Responsavel *</label>
+                      <Input 
+                        value={salaResponsavel} 
+                        onChange={(e) => setSalaResponsavel(e.target.value)} 
+                        placeholder="Ex: Sala dos professores, Secretaria, Refeitorio" 
+                        className="h-11 text-sm border-[#e2e8f0] bg-white placeholder:text-[#94a3b8]" 
+                      />
                     </div>
                   </div>
 
