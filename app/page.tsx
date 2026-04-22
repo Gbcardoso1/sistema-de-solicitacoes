@@ -334,20 +334,20 @@ export default function HomePage() {
               </button>
             </div>
             {chatStep === "info" ? (
-              <div className="flex-1 flex flex-col items-center justify-center p-8 space-y-4">
-                <p className="text-sm text-[#64748b] text-center">Preencha seus dados para iniciar o atendimento:</p>
+              <div className="flex-1 flex flex-col items-center justify-center p-8 space-y-6">
+                <p className="text-base text-[#64748b] text-center">Preencha seus dados para iniciar o atendimento:</p>
                 <div className="w-full max-w-sm">
-                  <label className="block text-sm font-semibold mb-1 text-[#1e293b]">Seu Nome</label>
-                  <Input value={nomeUsuario} onChange={(e) => setNomeUsuario(e.target.value)} placeholder="Digite seu nome" className="text-sm" />
+                  <label className="block text-base font-semibold mb-2 text-[#1e293b]">Seu Nome</label>
+                  <Input value={nomeUsuario} onChange={(e) => setNomeUsuario(e.target.value)} placeholder="Digite seu nome" className="text-base h-12" />
                 </div>
                 <div className="w-full max-w-sm">
-                  <label className="block text-sm font-semibold mb-1 text-[#1e293b]">Nome da Instituicao</label>
+                  <label className="block text-base font-semibold mb-2 text-[#1e293b]">Nome da Instituicao</label>
                   <Select value={instituicaoUsuario} onValueChange={setInstituicaoUsuario}>
-                    <SelectTrigger className="text-sm"><SelectValue placeholder="Selecione a escola" /></SelectTrigger>
-                    <SelectContent className="max-h-60">{getInstituicoesAtivas().map(inst => <SelectItem key={inst} value={inst} className="text-xs">{inst}</SelectItem>)}</SelectContent>
+                    <SelectTrigger className="text-base h-12"><SelectValue placeholder="Selecione a escola" /></SelectTrigger>
+                    <SelectContent className="max-h-60">{getInstituicoesAtivas().map(inst => <SelectItem key={inst} value={inst} className="text-sm">{inst}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <Button onClick={iniciarChat} disabled={!nomeUsuario.trim() || !instituicaoUsuario.trim()} className="w-full max-w-sm bg-[#1a1a4e] hover:bg-[#252566] text-white mt-2">
+                <Button onClick={iniciarChat} disabled={!nomeUsuario.trim() || !instituicaoUsuario.trim()} className="w-full max-w-sm bg-[#1a1a4e] hover:bg-[#252566] text-white mt-4 h-12 text-base font-medium">
                   Iniciar Conversa
                 </Button>
               </div>
