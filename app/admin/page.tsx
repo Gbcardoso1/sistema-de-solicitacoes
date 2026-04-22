@@ -83,6 +83,15 @@ import {
   type Recibo,
 } from "@/lib/solicitacoes-store";
 import { getItensAtivos, getTodosItens, addItem, removeItem, reativarItem, excluirItem, CATEGORIAS, type CategoriaId, type ItemCatalogo } from "@/lib/itens-catalogo-store";
+import { 
+  getInstituicoes, 
+  addInstituicao, 
+  updateInstituicao, 
+  desativarInstituicao, 
+  reativarInstituicao, 
+  excluirInstituicao, 
+  type InstituicaoItem 
+} from "@/lib/instituicoes-store";
 import AdminDashboard from "@/components/admin-dashboard";
 import {
   getUsuarios,
@@ -104,7 +113,7 @@ import {
   type Setor,
   type Permissao,
 } from "@/lib/usuarios-store";
-import { INSTITUICOES } from "@/lib/instituicoes";
+
 
 // Dados de exemplo para arrolamentos
 const ARROLAMENTOS_DADOS = [
@@ -1190,7 +1199,7 @@ const GRUPOS_EDICAO = [
   { id: "patrimonio", label: "Patrimonio", categorias: ["patrimonio"] },
   { id: "uniformes", label: "Uniformes", categorias: ["uniforme", "tamanhosRoupas", "calcado"] },
   { id: "kits", label: "Kits", categorias: ["kitAluno", "mochila", "kitProfessor", "tamanhosPolo"] },
-  { id: "instituicoes", label: "Instituicoes", categorias: ["instituicoes"] },
+  { id: "instituicoes", label: "Instituicoes", categorias: [] },
 ];
 
 function EdicoesView() {
@@ -1201,16 +1210,30 @@ function EdicoesView() {
   const [novoItemNome, setNovoItemNome] = useState("");
   const [itens, setItens] = useState<ItemCatalogo[]>([]);
   const [confirmExcluir, setConfirmExcluir] = useState<string | null>(null);
+  
+  // Estado para instituicoes
+  const [instituicoes, setInstituicoes] = useState<InstituicaoItem[]>([]);
+  const [novaInstituicaoNome, setNovaInstituicaoNome] = useState("");
+  const [editandoInstituicao, setEditandoInstituicao] = useState<{id: string; nome: string} | null>(null);
 
   // Carrega itens quando categoria muda
   useEffect(() => {
-    carregarItens();
-  }, [categoriaAtiva, mostrarInativos]);
+    if (grupoAtivo === "instituicoes") {
+      carregarInstituicoes();
+    } else {
+      carregarItens();
+    }
+  }, [categoriaAtiva, mostrarInativos, grupoAtivo]);
 
   const carregarItens = () => {
     const todos = getTodosItens();
     const filtrados = todos.filter(item => item.categoria === categoriaAtiva);
     setItens(filtrados);
+  };
+
+  const carregarInstituicoes = () => {
+    const todas = getInstituicoes();
+    setInstituicoes(todas);
   };
 
   // Atualiza categoria quando grupo muda
@@ -1229,6 +1252,12 @@ function EdicoesView() {
   const itensFiltrados = itens.filter(item => {
     const matchBusca = item.nome.toLowerCase().includes(busca.toLowerCase());
     const matchAtivo = mostrarInativos ? true : item.ativo;
+    return matchBusca && matchAtivo;
+  });
+
+  const instituicoesFiltradas = instituicoes.filter(inst => {
+    const matchBusca = inst.nome.toLowerCase().includes(busca.toLowerCase());
+    const matchAtivo = mostrarInativos ? true : inst.ativo;
     return matchBusca && matchAtivo;
   });
 
@@ -1255,6 +1284,245 @@ function EdicoesView() {
     carregarItens();
   };
 
+  // Funcoes para instituicoes
+  const handleAdicionarInstituicao = () => {
+    if (!novaInstituicaoNome.trim()) return;
+    addInstituicao(novaInstituicaoNome.trim());
+    setNovaInstituicaoNome("");
+    carregarInstituicoes();
+  };
+
+  const handleDesativarInstituicao = (id: string) => {
+    desativarInstituicao(id);
+    carregarInstituicoes();
+  };
+
+  const handleReativarInstituicao = (id: string) => {
+    reativarInstituicao(id);
+    carregarInstituicoes();
+  };
+
+  const handleExcluirInstituicao = (id: string) => {
+    excluirInstituicao(id);
+    setConfirmExcluir(null);
+    carregarInstituicoes();
+  };
+
+  const handleSalvarEdicaoInstituicao = () => {
+    if (!editandoInstituicao || !editandoInstituicao.nome.trim()) return;
+    updateInstituicao(editandoInstituicao.id, { nome: editandoInstituicao.nome.toUpperCase() });
+    setEditandoInstituicao(null);
+    carregarInstituicoes();
+  };
+
+  // Renderiza view de instituicoes
+  if (grupoAtivo === "instituicoes") {
+    return (
+      <div className="space-y-4">
+        {/* Header */}
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h2 className="text-lg font-bold text-[#1a1a1a]">Edicoes de Formularios</h2>
+            <p className="text-xs text-[#8c8c8c]">Adicione, edite, desative ou exclua instituicoes</p>
+          </div>
+          <label className="flex items-center gap-2 text-xs text-[#666]">
+            <input 
+              type="checkbox" 
+              checked={mostrarInativos} 
+              onChange={(e) => setMostrarInativos(e.target.checked)} 
+              className="rounded border-[#ccc]" 
+            />
+            Mostrar inativos
+          </label>
+        </div>
+
+        {/* Tabs de grupos */}
+        <div className="flex items-center gap-1 bg-[#f5f5f5] rounded-lg p-1 overflow-x-auto">
+          {GRUPOS_EDICAO.map(grupo => (
+            <button 
+              key={grupo.id}
+              onClick={() => setGrupoAtivo(grupo.id)} 
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${grupoAtivo === grupo.id ? "bg-white text-[#111c44] shadow-sm" : "text-[#666] hover:bg-white/50"}`}
+            >
+              {grupo.id === "almoxarifado" && <Package className="w-4 h-4" />}
+              {grupo.id === "patrimonio" && <Armchair className="w-4 h-4" />}
+              {grupo.id === "uniformes" && <Shirt className="w-4 h-4" />}
+              {grupo.id === "kits" && <BoxIcon className="w-4 h-4" />}
+              {grupo.id === "instituicoes" && <Building2 className="w-4 h-4" />}
+              {grupo.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Busca e adicionar instituicao */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#999]" />
+            <input
+              type="text"
+              placeholder="Buscar instituicao..."
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 border border-[#e5e5e5] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#111c44]/20"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              placeholder="Nome da nova instituicao..."
+              value={novaInstituicaoNome}
+              onChange={(e) => setNovaInstituicaoNome(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAdicionarInstituicao()}
+              className="px-4 py-2 border border-[#e5e5e5] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#111c44]/20 min-w-[250px]"
+            />
+            <Button onClick={handleAdicionarInstituicao} className="bg-green-600 hover:bg-green-700 text-white gap-1">
+              <Plus className="w-4 h-4" /> Adicionar
+            </Button>
+          </div>
+        </div>
+
+        {/* Lista de instituicoes */}
+        <div className="bg-white border border-[#e5e5e5] rounded-xl overflow-hidden">
+          <div className="px-4 py-3 bg-[#f9fafb] border-b border-[#e5e5e5] flex items-center justify-between">
+            <span className="text-sm font-medium text-[#1a1a1a] flex items-center gap-2">
+              <Building2 className="w-4 h-4" />
+              Instituicoes
+            </span>
+            <span className="text-xs text-[#666]">
+              {instituicoesFiltradas.length} {instituicoesFiltradas.length === 1 ? "instituicao" : "instituicoes"}
+            </span>
+          </div>
+
+          {instituicoesFiltradas.length === 0 ? (
+            <div className="px-4 py-8 text-center text-sm text-[#999]">
+              Nenhuma instituicao encontrada
+            </div>
+          ) : (
+            <div className="divide-y divide-[#e5e5e5] max-h-[500px] overflow-y-auto">
+              {instituicoesFiltradas.map(inst => (
+                <div key={inst.id} className={`px-4 py-3 flex items-center justify-between gap-4 ${!inst.ativo ? "bg-[#fafafa]" : ""}`}>
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    {editandoInstituicao?.id === inst.id ? (
+                      <input
+                        type="text"
+                        value={editandoInstituicao.nome}
+                        onChange={(e) => setEditandoInstituicao({ ...editandoInstituicao, nome: e.target.value })}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleSalvarEdicaoInstituicao();
+                          if (e.key === "Escape") setEditandoInstituicao(null);
+                        }}
+                        className="flex-1 px-3 py-1 border border-[#111c44] rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#111c44]/20"
+                        autoFocus
+                      />
+                    ) : (
+                      <span className={`text-sm ${!inst.ativo ? "text-[#999] line-through" : "text-[#1a1a1a]"}`}>
+                        {inst.nome}
+                      </span>
+                    )}
+                    {!inst.ativo && (
+                      <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-600 text-xs font-medium">
+                        Inativo
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {editandoInstituicao?.id === inst.id ? (
+                      <>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={handleSalvarEdicaoInstituicao}
+                          className="text-green-600 border-green-200 hover:bg-green-50 text-xs"
+                        >
+                          Salvar
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => setEditandoInstituicao(null)}
+                          className="text-[#666] border-[#ccc] hover:bg-[#f5f5f5] text-xs"
+                        >
+                          Cancelar
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => setEditandoInstituicao({ id: inst.id, nome: inst.nome })}
+                          className="text-blue-600 border-blue-200 hover:bg-blue-50 text-xs"
+                        >
+                          <Pencil className="w-3 h-3" />
+                        </Button>
+                        {inst.ativo ? (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleDesativarInstituicao(inst.id)}
+                            className="text-amber-600 border-amber-200 hover:bg-amber-50 text-xs"
+                          >
+                            Desativar
+                          </Button>
+                        ) : (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleReativarInstituicao(inst.id)}
+                            className="text-green-600 border-green-200 hover:bg-green-50 text-xs"
+                          >
+                            Reativar
+                          </Button>
+                        )}
+                        {confirmExcluir === inst.id ? (
+                          <div className="flex items-center gap-1">
+                            <Button 
+                              variant="destructive" 
+                              size="sm" 
+                              onClick={() => handleExcluirInstituicao(inst.id)}
+                              className="text-xs"
+                            >
+                              Confirmar
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => setConfirmExcluir(null)}
+                              className="text-xs"
+                            >
+                              Cancelar
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => setConfirmExcluir(inst.id)}
+                            className="text-red-600 border-red-200 hover:bg-red-50 text-xs"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Legenda */}
+        <div className="bg-sky-50 border border-sky-200 rounded-lg p-3">
+          <p className="text-xs text-sky-800">
+            <strong>Nota:</strong> Ao desativar uma instituicao, ela permanece visivel aqui na area administrativa mas nao aparece mais nos formularios. 
+            Ao excluir, a instituicao e removida permanentemente do sistema.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -1275,17 +1543,18 @@ function EdicoesView() {
       </div>
 
       {/* Tabs de grupos */}
-      <div className="flex items-center gap-1 bg-[#f5f5f5] rounded-lg p-1">
+      <div className="flex items-center gap-1 bg-[#f5f5f5] rounded-lg p-1 overflow-x-auto">
         {GRUPOS_EDICAO.map(grupo => (
           <button 
             key={grupo.id}
             onClick={() => setGrupoAtivo(grupo.id)} 
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${grupoAtivo === grupo.id ? "bg-white text-[#111c44] shadow-sm" : "text-[#666] hover:bg-white/50"}`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${grupoAtivo === grupo.id ? "bg-white text-[#111c44] shadow-sm" : "text-[#666] hover:bg-white/50"}`}
           >
             {grupo.id === "almoxarifado" && <Package className="w-4 h-4" />}
             {grupo.id === "patrimonio" && <Armchair className="w-4 h-4" />}
             {grupo.id === "uniformes" && <Shirt className="w-4 h-4" />}
             {grupo.id === "kits" && <BoxIcon className="w-4 h-4" />}
+            {grupo.id === "instituicoes" && <Building2 className="w-4 h-4" />}
             {grupo.label}
           </button>
         ))}
@@ -1417,6 +1686,14 @@ function EdicoesView() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* Legenda */}
+      <div className="bg-sky-50 border border-sky-200 rounded-lg p-3">
+        <p className="text-xs text-sky-800">
+          <strong>Nota:</strong> Ao desativar um item, ele permanece visivel aqui na area administrativa mas nao aparece mais nos formularios. 
+          Ao excluir, o item e removido permanentemente do sistema.
+        </p>
       </div>
     </div>
   );

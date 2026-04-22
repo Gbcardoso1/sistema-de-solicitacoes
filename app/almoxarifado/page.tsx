@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { addSolicitacao, gerarNumeroSolicitacao } from "@/lib/solicitacoes-store";
 import { gerarComprovantePDF } from "@/lib/gerar-comprovante-pdf";
 import { getNomesAtivos } from "@/lib/itens-catalogo-store";
-import { INSTITUICOES } from "@/lib/instituicoes";
+import { getInstituicoesAtivas } from "@/lib/instituicoes-store";
 
 interface PapelariaItem { id: number; tipo: string; quantidade: number }
 interface CozinhaItem { id: number; tipo: string; quantidade: number }
@@ -137,9 +137,9 @@ export default function AlmoxarifadoPage() {
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
-                    {INSTITUICOES.map((inst) => (
-                      <SelectItem key={inst} value={inst}>
-                        {inst}
+{getInstituicoesAtivas().map((inst) => (
+<SelectItem key={inst} value={inst}>
+{inst}
                       </SelectItem>
                     ))}
                   </SelectContent>

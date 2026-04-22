@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { addInventario, type InventarioItem } from "@/lib/solicitacoes-store";
 import jsPDF from "jspdf";
-import { INSTITUICOES } from "@/lib/instituicoes";
+import { getInstituicoesAtivas } from "@/lib/instituicoes-store";
 
 export default function SolicitarInventarioPage() {
   const [escola, setEscola] = useState("");
@@ -182,7 +182,7 @@ export default function SolicitarInventarioPage() {
                   <SelectValue placeholder="Selecione a escola" />
                 </SelectTrigger>
                 <SelectContent className="max-h-60">
-                  {INSTITUICOES.map((inst) => (
+                  {getInstituicoesAtivas().map((inst) => (
                     <SelectItem key={inst} value={inst} className="text-sm">{inst}</SelectItem>
                   ))}
                 </SelectContent>

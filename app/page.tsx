@@ -37,7 +37,7 @@ import {
   getChatPorInstituicao,
   type ChatMessage,
 } from "@/lib/solicitacoes-store";
-import { INSTITUICOES } from "@/lib/instituicoes";
+import { getInstituicoesAtivas } from "@/lib/instituicoes-store";
 
 // Menu items - left column
 const menuItemsLeft = [
@@ -344,7 +344,7 @@ export default function HomePage() {
                   <label className="block text-sm font-semibold mb-1 text-[#1e293b]">Nome da Instituicao</label>
                   <Select value={instituicaoUsuario} onValueChange={setInstituicaoUsuario}>
                     <SelectTrigger className="text-sm"><SelectValue placeholder="Selecione a escola" /></SelectTrigger>
-                    <SelectContent className="max-h-60">{INSTITUICOES.map(inst => <SelectItem key={inst} value={inst} className="text-xs">{inst}</SelectItem>)}</SelectContent>
+                    <SelectContent className="max-h-60">{getInstituicoesAtivas().map(inst => <SelectItem key={inst} value={inst} className="text-xs">{inst}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <Button onClick={iniciarChat} disabled={!nomeUsuario.trim() || !instituicaoUsuario.trim()} className="w-full bg-[#1a1a4e] hover:bg-[#252566] text-white">

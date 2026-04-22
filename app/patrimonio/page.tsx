@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { addSolicitacao, gerarNumeroSolicitacao } from "@/lib/solicitacoes-store";
 import { gerarComprovantePDF } from "@/lib/gerar-comprovante-pdf";
 import { getNomesAtivos } from "@/lib/itens-catalogo-store";
-import { INSTITUICOES } from "@/lib/instituicoes";
+import { getInstituicoesAtivas } from "@/lib/instituicoes-store";
 
 interface PatrimonioItem { id: number; tipo: string; quantidade: number; setor: string }
 
@@ -108,7 +108,7 @@ export default function PatrimonioPage() {
                     <SelectValue placeholder="Selecione a instituicao" />
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
-                    {INSTITUICOES.map(inst => <SelectItem key={inst} value={inst} className="text-sm">{inst}</SelectItem>)}
+                    {getInstituicoesAtivas().map(inst => <SelectItem key={inst} value={inst} className="text-sm">{inst}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>

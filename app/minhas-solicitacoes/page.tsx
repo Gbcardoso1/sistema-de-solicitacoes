@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getSolicitacaoPorNumero, getSolicitacoesPorInstituicao } from "@/lib/solicitacoes-store";
 import type { Solicitacao } from "@/lib/solicitacoes-store";
-import { INSTITUICOES } from "@/lib/instituicoes";
+import { getInstituicoesAtivas } from "@/lib/instituicoes-store";
 import { gerarComprovantePDF } from "@/lib/gerar-comprovante-pdf";
 
 type TipoBusca = "individual" | "minhas";
@@ -197,7 +197,7 @@ export default function MinhasSolicitacoesPage() {
                     <SelectValue placeholder="Selecione a instituicao" />
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
-                    {INSTITUICOES.map((inst) => (
+                    {getInstituicoesAtivas().map((inst) => (
                       <SelectItem key={inst} value={inst} className="text-xs">{inst}</SelectItem>
                     ))}
                   </SelectContent>

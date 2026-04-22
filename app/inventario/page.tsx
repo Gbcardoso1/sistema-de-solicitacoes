@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 
 import { getSolicitacoes, addInventario, addInventarioSetor, type InventarioItem, type Solicitacao } from "@/lib/solicitacoes-store";
-import { INSTITUICOES } from "@/lib/instituicoes";
+import { getInstituicoesAtivas } from "@/lib/instituicoes-store";
 
 export default function InventarioPage() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -419,7 +419,7 @@ export default function InventarioPage() {
                           <SelectValue placeholder="Selecione a escola" />
                         </SelectTrigger>
                         <SelectContent className="max-h-60">
-                          {INSTITUICOES.map((inst) => (
+                          {getInstituicoesAtivas().map((inst) => (
                             <SelectItem key={inst} value={inst} className="text-sm">{inst}</SelectItem>
                           ))}
                         </SelectContent>
@@ -596,7 +596,7 @@ export default function InventarioPage() {
                   <Select value={invSetorDenominacao} onValueChange={setInvSetorDenominacao}>
                     <SelectTrigger className="h-11 text-sm border-[#e2e8f0] bg-white"><SelectValue placeholder="Selecione a instituicao" /></SelectTrigger>
                     <SelectContent className="max-h-[300px]">
-                      {INSTITUICOES.map((inst) => (
+                      {getInstituicoesAtivas().map((inst) => (
                         <SelectItem key={inst} value={inst} className="text-sm">{inst}</SelectItem>
                       ))}
                     </SelectContent>

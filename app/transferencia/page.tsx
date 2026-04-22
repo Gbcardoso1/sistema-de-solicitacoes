@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { addSolicitacao } from "@/lib/solicitacoes-store";
 import { gerarPDFTransferencia } from "@/lib/gerar-comprovante-pdf";
-import { INSTITUICOES } from "@/lib/instituicoes";
+import { getInstituicoesAtivas } from "@/lib/instituicoes-store";
 
 const situacoes = ["BOM", "RUIM", "REGULAR", "INSERVIVEL"];
 const condicoes = ["BAIXA", "TRANSFERENCIA"];
@@ -118,7 +118,7 @@ export default function TransferenciaPage() {
                   <label className="block text-sm text-[#475569]">Nome da Unidade</label>
                   <Select value={unidadeOrigem} onValueChange={setUnidadeOrigem}>
                     <SelectTrigger className="h-11 text-sm border-[#e2e8f0] bg-white"><SelectValue placeholder="Selecione a unidade" /></SelectTrigger>
-                    <SelectContent className="max-h-60">{INSTITUICOES.map(inst => <SelectItem key={inst} value={inst} className="text-sm">{inst}</SelectItem>)}</SelectContent>
+                    <SelectContent className="max-h-60">{getInstituicoesAtivas().map(inst => <SelectItem key={inst} value={inst} className="text-sm">{inst}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
@@ -145,7 +145,7 @@ export default function TransferenciaPage() {
                   <label className="block text-sm text-[#475569]">Nome da Unidade</label>
                   <Select value={unidadeDestino} onValueChange={setUnidadeDestino}>
                     <SelectTrigger className="h-11 text-sm border-[#e2e8f0] bg-white"><SelectValue placeholder="Selecione a unidade" /></SelectTrigger>
-                    <SelectContent className="max-h-60">{INSTITUICOES.map(inst => <SelectItem key={inst} value={inst} className="text-sm">{inst}</SelectItem>)}</SelectContent>
+                    <SelectContent className="max-h-60">{getInstituicoesAtivas().map(inst => <SelectItem key={inst} value={inst} className="text-sm">{inst}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
