@@ -1,0 +1,396 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import {
+  LogIn,
+  Shirt,
+  Package,
+  Armchair,
+  ArrowRightLeft,
+  ClipboardList,
+  HelpCircle,
+  MessageCircle,
+  X,
+  Send,
+  Search,
+  Eye,
+  EyeOff,
+  Lock,
+  Bluetooth,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  addChatMessage,
+  getChatPorInstituicao,
+  type ChatMessage,
+} from "@/lib/solicitacoes-store";
+import { INSTITUICOES } from "@/lib/instituicoes";
+
+// Menu items - left column
+const menuItemsLeft = [
+  { href: "/patrimonio", label: "SOLICITAR PATRIMONIO", icon: Armchair },
+  { href: "/almoxarifado", label: "SOLICITAR ALMOXARIFADO", icon: Package },
+  { href: "/uniformes", label: "SOLICITAR UNIFORMES", icon: Shirt },
+  { href: "/kits", label: "SOLICITAR KITS", icon: Package },
+];
+
+// Menu items - right column
+const menuItemsRight = [
+  { href: "/minhas-solicitacoes", label: "VERIFICAR SOLICITACAO", icon: Armchair },
+  { href: "/duvidas", label: "DUVIDAS FREQUENTES", icon: HelpCircle },
+  { href: "/transferencia", label: "TRANSFERENCIA DE ITENS", icon: ArrowRightLeft },
+  { href: "/inventario", label: "INVENTARIO ANUAL", icon: ClipboardList },
+];
+
+export default function HomePage() {
+  const router = useRouter();
+
+  // Login modal state
+  const [showLogin, setShowLogin] = useState(false);
+  const [loginUsuario, setLoginUsuario] = useState("");
+  const [loginSenha, setLoginSenha] = useState("");
+  const [loginErro, setLoginErro] = useState("");
+  const [mostrarSenha, setMostrarSenha] = useState(false);
+
+  const handleLogin = () => {
+    if (loginUsuario === "patrimonio" && loginSenha === "#cmpp123") {
+      router.push("/admin");
+    } else {
+      setLoginErro("Usuario ou senha incorretos");
+    }
+  };
+
+  const fecharLogin = () => {
+    setShowLogin(false);
+    setLoginUsuario("");
+    setLoginSenha("");
+    setLoginErro("");
+    setMostrarSenha(false);
+  };
+
+  // Chat state
+  const [showChat, setShowChat] = useState(false);
+  const [chatStep, setChatStep] = useState<"info" | "chat">("info");
+  const [nomeUsuario, setNomeUsuario] = useState("");
+  const [instituicaoUsuario, setInstituicaoUsuario] = useState("");
+  const [mensagem, setMensagem] = useState("");
+  const [mensagens, setMensagens] = useState<ChatMessage[]>([]);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (instituicaoUsuario && chatStep === "chat") {
+      const msgs = getChatPorInstituicao(instituicaoUsuario);
+      setMensagens(msgs);
+    }
+  }, [instituicaoUsuario, chatStep]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [mensagens]);
+
+  const iniciarChat = () => {
+    if (nomeUsuario.trim() && instituicaoUsuario.trim()) {
+      setChatStep("chat");
+    }
+  };
+
+  const enviarMensagem = () => {
+    if (mensagem.trim()) {
+      const novaMensagem = addChatMessage({
+        remetente: "escola",
+        nomeRemetente: nomeUsuario,
+        instituicao: instituicaoUsuario,
+        mensagem: mensagem.trim(),
+        conversaId: instituicaoUsuario.toLowerCase().replace(/\s+/g, "-"),
+      });
+      setMensagens((prev) => [...prev, novaMensagem]);
+      setMensagem("");
+    }
+  };
+
+  const fecharChat = () => {
+    setShowChat(false);
+    setChatStep("info");
+    setNomeUsuario("");
+    setInstituicaoUsuario("");
+    setMensagem("");
+    setMensagens([]);
+  };
+
+  const openLogin = () => {
+    setShowLogin(true);
+  };
+
+  const openChat = () => {
+    setShowChat(true);
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col bg-[#1a1a4e]">
+      {/* Header - Dark Navy */}
+      <header className="relative bg-[#1a1a4e] py-8 lg:py-18">
+        {/* Login button top-left */}
+        <button
+          onClick={openLogin}
+          className="absolute top-4 left-4 lg:top-6 lg:left-6 w-10 h-10 rounded-full border-2 border-white/30 hover:border-white/60 hover:bg-white/10 flex items-center justify-center transition-all duration-300 z-30"
+          title="Acesso Administrativo"
+        >
+          <LogIn className="w-5 h-5 text-white" />
+        </button>
+
+        {/* Logo and title centered */}
+        <div className="flex flex-col items-center justify-center px-4">
+          <div className="relative w-48 h-30 lg:w-63 lg:h-38 mb--1">
+            <Image
+              src="/images/logo-saquarema.png"
+              alt="Prefeitura de Saquarema"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
+          <p className="text-white/60 text-xs lg:text-xs font-medium tracking-[0.15em] uppercase text-center">
+            Sistema Integrado de Solicitacoes Digitais
+          </p>
+        </div>
+      </header>
+
+      {/* Main content - Cream/Beige background with curved top */}
+      <main
+        className="flex-1 relative bg-[#f5f5eb] border-t-10 border-[#ebd50e] mt-0"
+        style={{
+          marginTop: "0px",
+          borderTopLeftRadius: "30px",
+          borderTopRightRadius: "30px",
+        }}
+      >
+        <div className="container mx-auto px-4 py-6 lg:py-16">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+
+            {/* Left column */}
+            <div className="flex flex-col gap-4">
+              {menuItemsLeft.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="group flex items-center gap-4 bg-[#0fb992] hover:bg-[#1c5b4c] text-white px-5 py-5 rounded-lg font-bold transition-all duration-200 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <div className="w-10 h-8 rounded-md bg-white/20 flex items-center justify-center shrink-0">
+                    <item.icon className="w-5 h-5 text-white" strokeWidth={1.5} />
+                  </div>
+                  <span className="text-xs font-bold tracking-wide uppercase">{item.label}</span>
+                </Link>
+              ))}
+            </div>
+
+            {/* Right column */}
+            <div className="flex flex-col gap-4">
+              {menuItemsRight.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="group flex items-center gap-4 bg-[#0fb992] hover:bg-[#1c5b4c] text-white px-5 py-5 rounded-lg font-bold transition-all duration-200 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <div className="w-10 h-8 rounded-md bg-white/20 flex items-center justify-center shrink-0">
+                    <item.icon className="w-5 h-5 text-white" strokeWidth={1.5} />
+                  </div>
+                  <span className="text-xs font-bold tracking-wide uppercase">{item.label}</span>
+                </Link>
+              ))}
+
+              {/* Chat Online button */}
+              <button
+                onClick={openChat}
+                className="fixed bottom-6 right-6 w-14 h-14 bg-[#1a1a4e] hover:bg-[#261da0] text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 z-50 group"
+              >
+                <div className="w-10 h-10 rounded-md bg-white/20 flex items-center justify-center shrink-0">
+                  <MessageCircle className="w-6 h-6 text-white transition-transform duration-300 group-hover:scale-110" strokeWidth={1.5} />
+                </div>
+              </button>
+
+            </div>
+
+          </div>
+        </div>
+      </main>
+
+      {/* Login Modal */}
+      {showLogin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Overlay */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={fecharLogin}
+          />
+          {/* Dialog */}
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-8">
+            {/* Close button */}
+            <button
+              onClick={fecharLogin}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full hover:bg-[#f1f5f9] flex items-center justify-center text-[#94a3b8] hover:text-[#475569] transition-all duration-200"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Icon */}
+            <div className="flex flex-col items-center mb-6">
+              <div className="w-16 h-16 rounded-full bg-[#f1f5f9] flex items-center justify-center mb-4">
+                <Lock className="w-8 h-8 text-[#1a1a4e]" />
+              </div>
+              <h2 className="text-xl font-bold text-[#1a1a4e]">Acesso Administrativo</h2>
+              <p className="text-sm text-[#64748b] mt-1 text-center">
+                Digite suas credenciais para acessar o painel de gestao
+              </p>
+            </div>
+
+            {/* Form */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-[#1e293b] mb-1.5">Login</label>
+                <Input
+                  value={loginUsuario}
+                  onChange={(e) => { setLoginUsuario(e.target.value); setLoginErro(""); }}
+                  placeholder="Digite o login"
+                  className="h-11 bg-white border-[#e2e8f0] focus:border-[#1a1a4e] text-[#1e293b] placeholder:text-[#94a3b8]"
+                  onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-[#1e293b] mb-1.5">Senha</label>
+                <div className="relative">
+                  <Input
+                    type={mostrarSenha ? "text" : "password"}
+                    value={loginSenha}
+                    onChange={(e) => { setLoginSenha(e.target.value); setLoginErro(""); }}
+                    placeholder="Digite a senha"
+                    className="h-11 bg-white border-[#e2e8f0] focus:border-[#1a1a4e] text-[#1e293b] placeholder:text-[#94a3b8] pr-11"
+                    onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setMostrarSenha(!mostrarSenha)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#475569] transition-colors duration-200"
+                  >
+                    {mostrarSenha ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {loginErro && (
+                <p className="text-sm text-red-500">{loginErro}</p>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <Button
+                  onClick={fecharLogin}
+                  variant="outline"
+                  className="flex-1 h-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handleLogin}
+                  className="flex-1 h-11 bg-[#1a1a4e] hover:bg-[#252566] text-white font-semibold transition-all duration-300 hover:shadow-lg"
+                >
+                  Acessar
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Chat Modal */}
+      {showChat && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Overlay */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={fecharChat}
+          />
+          {/* Dialog */}
+          <div className="relative w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden">
+            <div className="bg-[#1a1a4e] text-white p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MessageCircle className="w-5 h-5" />
+                <span className="font-semibold text-sm">Fale com o Patrimonio</span>
+              </div>
+              <button onClick={fecharChat} className="hover:bg-white/20 p-1 rounded">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            {chatStep === "info" ? (
+              <div className="p-4 space-y-4">
+                <p className="text-sm text-[#64748b]">Preencha seus dados para iniciar o atendimento:</p>
+                <div>
+                  <label className="block text-sm font-semibold mb-1 text-[#1e293b]">Seu Nome</label>
+                  <Input value={nomeUsuario} onChange={(e) => setNomeUsuario(e.target.value)} placeholder="Digite seu nome" className="text-sm" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-1 text-[#1e293b]">Nome da Instituicao</label>
+                  <Select value={instituicaoUsuario} onValueChange={setInstituicaoUsuario}>
+                    <SelectTrigger className="text-sm"><SelectValue placeholder="Selecione a escola" /></SelectTrigger>
+                    <SelectContent className="max-h-60">{INSTITUICOES.map(inst => <SelectItem key={inst} value={inst} className="text-xs">{inst}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={iniciarChat} disabled={!nomeUsuario.trim() || !instituicaoUsuario.trim()} className="w-full bg-[#1a1a4e] hover:bg-[#252566] text-white">
+                  Iniciar Conversa
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="h-64 overflow-y-auto p-4 space-y-3 bg-[#f8fafc]">
+                  {mensagens.length === 0 ? (
+                    <div className="text-center text-[#94a3b8] text-sm py-8">
+                      <p>Ola, {nomeUsuario}!</p>
+                      <p className="mt-1">Como podemos ajudar?</p>
+                    </div>
+                  ) : (
+                    mensagens.map((msg) => (
+                      <div key={msg.id} className={`flex ${msg.remetente === "escola" ? "justify-end" : "justify-start"}`}>
+                        <div className={`max-w-[80%] p-3 rounded-lg text-sm ${msg.remetente === "escola" ? "bg-[#1a1a4e] text-white rounded-br-none" : "bg-white border text-[#1e293b] rounded-bl-none"}`}>
+                          <p className="font-medium text-xs mb-1 opacity-70">{msg.remetente === "escola" ? "Voce" : "Patrimonio"}</p>
+                          <p>{msg.mensagem}</p>
+                          <p className="text-xs mt-1 opacity-50">{msg.dataHora}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                  <div ref={chatEndRef} />
+                </div>
+                <div className="p-3 border-t bg-white">
+                  <div className="flex gap-2">
+                    <Textarea
+                      value={mensagem}
+                      onChange={(e) => setMensagem(e.target.value)}
+                      placeholder="Digite sua mensagem..."
+                      className="min-h-[40px] max-h-[80px] text-sm resize-none"
+                      onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); enviarMensagem(); } }}
+                    />
+                    <Button onClick={enviarMensagem} disabled={!mensagem.trim()} size="icon" className="bg-[#1a1a4e] hover:bg-[#252566] text-white shrink-0">
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
