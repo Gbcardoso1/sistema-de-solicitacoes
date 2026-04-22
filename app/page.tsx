@@ -323,7 +323,7 @@ export default function HomePage() {
             onClick={fecharChat}
           />
           {/* Dialog */}
-          <div className="relative w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden">
+          <div className="relative w-full max-w-2xl h-[600px] bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col">
             <div className="bg-[#1a1a4e] text-white p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <MessageCircle className="w-5 h-5" />
@@ -353,7 +353,7 @@ export default function HomePage() {
               </div>
             ) : (
               <>
-                <div className="h-64 overflow-y-auto p-4 space-y-3 bg-[#f8fafc]">
+                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#f8fafc]">
                   {mensagens.length === 0 ? (
                     <div className="text-center text-[#94a3b8] text-sm py-8">
                       <p>Ola, {nomeUsuario}!</p>
