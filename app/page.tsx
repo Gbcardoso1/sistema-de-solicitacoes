@@ -49,10 +49,10 @@ const menuItemsLeft = [
 
 // Menu items - right column
 const menuItemsRight = [
-  { href: "/minhas-solicitacoes", label: "VERIFICAR SOLICITACAO", icon: Armchair },
-  { href: "/duvidas", label: "DUVIDAS FREQUENTES", icon: HelpCircle },
   { href: "/transferencia", label: "TRANSFERENCIA DE ITENS", icon: ArrowRightLeft },
   { href: "/inventario", label: "INVENTARIO ANUAL", icon: ClipboardList },
+  { href: "/minhas-solicitacoes", label: "VERIFICAR SOLICITACAO", icon: Armchair },
+  { href: "/duvidas", label: "DUVIDAS FREQUENTES", icon: HelpCircle },
 ];
 
 export default function HomePage() {
