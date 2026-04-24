@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Plus, Shirt, Download, AlertTriangle, X } from "lucide-react";
+import { ArrowLeft, Plus, Shirt, Download, AlertTriangle, X, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -32,8 +32,21 @@ export default function UniformesPage() {
 
   const addUniforme = () => setUniformes([...uniformes, { id: Date.now(), tipo: "", genero: "", tamanho: "", quantidade: 0 }]);
   const removeUniforme = (id: number) => { if (uniformes.length > 1) setUniformes(uniformes.filter((u) => u.id !== id)); };
+  const incrementUniformeQuantidade = (id: number) => {
+    setUniformes(uniformes.map(u => u.id === id ? { ...u, quantidade: u.quantidade + 1 } : u));
+  };
+  const decrementUniformeQuantidade = (id: number) => {
+    setUniformes(uniformes.map(u => u.id === id ? { ...u, quantidade: Math.max(0, u.quantidade - 1) } : u));
+  };
+
   const addCalcado = () => setCalcados([...calcados, { id: Date.now(), tamanho: "", quantidade: 0 }]);
   const removeCalcado = (id: number) => { if (calcados.length > 1) setCalcados(calcados.filter((c) => c.id !== id)); };
+  const incrementCalcadoQuantidade = (id: number) => {
+    setCalcados(calcados.map(c => c.id === id ? { ...c, quantidade: c.quantidade + 1 } : c));
+  };
+  const decrementCalcadoQuantidade = (id: number) => {
+    setCalcados(calcados.map(c => c.id === id ? { ...c, quantidade: Math.max(0, c.quantidade - 1) } : c));
+  };
 
   const uniformesFiltrados = uniformes.filter(u => u.quantidade > 0);
   const calcadosFiltrados = calcados.filter(c => c.quantidade > 0);
@@ -142,7 +155,27 @@ export default function UniformesPage() {
                     </div>
                     <div className="space-y-2">
                       <label className="block text-sm text-[#475569]">Qtd.</label>
-                      <Input type="number" min="0" value={uniforme.quantidade} onChange={(e) => { const u = [...uniformes]; u[index].quantidade = parseInt(e.target.value) || 0; setUniformes(u); }} className="h-11 w-20 text-sm border-[#e2e8f0] bg-white text-center" />
+                      <div className="flex items-center gap-1">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => decrementUniformeQuantidade(uniforme.id)}
+                          className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </Button>
+                        <Input type="number" min="0" value={uniforme.quantidade} onChange={(e) => { const u = [...uniformes]; u[index].quantidade = parseInt(e.target.value) || 0; setUniformes(u); }} className="h-11 w-16 text-sm text-center border-[#e2e8f0] bg-white" />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => incrementUniformeQuantidade(uniforme.id)}
+                          className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                     {uniformes.length > 1 && (
                       <div className="pb-0.5">
@@ -189,7 +222,27 @@ export default function UniformesPage() {
                     </div>
                     <div className="space-y-2">
                       <label className="block text-sm text-[#475569]">Qtd.</label>
-                      <Input type="number" min="0" value={calcado.quantidade} onChange={(e) => { const c = [...calcados]; c[index].quantidade = parseInt(e.target.value) || 0; setCalcados(c); }} className="h-11 w-20 text-sm border-[#e2e8f0] bg-white text-center" />
+                      <div className="flex items-center gap-1">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => decrementCalcadoQuantidade(calcado.id)}
+                          className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </Button>
+                        <Input type="number" min="0" value={calcado.quantidade} onChange={(e) => { const c = [...calcados]; c[index].quantidade = parseInt(e.target.value) || 0; setCalcados(c); }} className="h-11 w-16 text-sm text-center border-[#e2e8f0] bg-white" />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => incrementCalcadoQuantidade(calcado.id)}
+                          className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                     {calcados.length > 1 && (
                       <div className="pb-0.5">
