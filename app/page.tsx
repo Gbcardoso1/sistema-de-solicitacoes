@@ -316,44 +316,44 @@ export default function HomePage() {
 
       {/* Chat Modal */}
       {showChat && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-end justify-end p-6 sm:items-center sm:justify-center sm:p-4">
           {/* Overlay */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={fecharChat}
           />
           {/* Dialog */}
-          <div className="relative w-full max-w-2xl h-[600px] bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col">
-            <div className="bg-[#1a1a4e] text-white p-4 flex items-center justify-between">
+          <div className="relative w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="bg-[#1a1a4e] text-white px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <MessageCircle className="w-5 h-5" />
+                <MessageCircle className="w-4 h-4" />
                 <span className="font-semibold text-sm">Fale com o Patrimonio</span>
               </div>
-              <button onClick={fecharChat} className="hover:bg-white/20 p-1 rounded">
+              <button onClick={fecharChat} className="hover:bg-white/20 p-1 rounded transition-colors">
                 <X className="w-4 h-4" />
               </button>
             </div>
             {chatStep === "info" ? (
-              <div className="flex-1 flex flex-col items-center justify-center p-10 space-y-8">
-                <p className="text-lg text-[#64748b] text-center">Preencha seus dados para iniciar o atendimento:</p>
-                <div className="w-full max-w-md">
-                  <label className="block text-lg font-semibold mb-3 text-[#1e293b]">Seu Nome</label>
-                  <Input value={nomeUsuario} onChange={(e) => setNomeUsuario(e.target.value)} placeholder="Digite seu nome" className="text-lg h-14 px-4" />
+              <div className="flex flex-col p-6 gap-5">
+                <p className="text-sm text-[#64748b] text-center">Preencha seus dados para iniciar o atendimento:</p>
+                <div>
+                  <label className="block text-sm font-semibold mb-1.5 text-[#1e293b]">Seu Nome</label>
+                  <Input value={nomeUsuario} onChange={(e) => setNomeUsuario(e.target.value)} placeholder="Digite seu nome" className="h-10 text-sm border-[#e2e8f0]" />
                 </div>
-                <div className="w-full max-w-md">
-                  <label className="block text-lg font-semibold mb-3 text-[#1e293b]">Nome da Instituicao</label>
+                <div>
+                  <label className="block text-sm font-semibold mb-1.5 text-[#1e293b]">Nome da Instituicao</label>
                   <Select value={instituicaoUsuario} onValueChange={setInstituicaoUsuario}>
-                    <SelectTrigger className="text-lg h-14"><SelectValue placeholder="Selecione a escola" /></SelectTrigger>
-                    <SelectContent className="max-h-60">{getInstituicoesAtivas().map(inst => <SelectItem key={inst} value={inst} className="text-base">{inst}</SelectItem>)}</SelectContent>
+                    <SelectTrigger className="h-10 text-sm border-[#e2e8f0]"><SelectValue placeholder="Selecione a escola" /></SelectTrigger>
+                    <SelectContent className="max-h-60">{getInstituicoesAtivas().map(inst => <SelectItem key={inst} value={inst} className="text-sm">{inst}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <Button onClick={iniciarChat} disabled={!nomeUsuario.trim() || !instituicaoUsuario.trim()} className="w-full max-w-md bg-[#1a1a4e] hover:bg-[#252566] text-white mt-6 h-14 text-lg font-medium">
+                <Button onClick={iniciarChat} disabled={!nomeUsuario.trim() || !instituicaoUsuario.trim()} className="w-full h-10 bg-[#1a1a4e] hover:bg-[#252566] text-white text-sm font-semibold transition-all duration-200">
                   Iniciar Conversa
                 </Button>
               </div>
             ) : (
               <>
-                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#f8fafc]">
+                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#f8fafc] h-80">
                   {mensagens.length === 0 ? (
                     <div className="text-center text-[#94a3b8] text-sm py-8">
                       <p>Ola, {nomeUsuario}!</p>
