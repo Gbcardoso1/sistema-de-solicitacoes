@@ -170,7 +170,7 @@ export default function HomePage() {
 
       {/* Main content - Cream/Beige background with curved top */}
       <main
-        className="flex-1 relative bg-[#f5f5eb] border-t-10 border-[#0fb992] mt-0"
+        className="flex-1 relative bg-[#f5f5eb] border-t-7 border-[#d6d212] mt-0"
         style={{
           marginTop: "0px",
           borderTopLeftRadius: "30px",
