@@ -151,9 +151,9 @@ export default function InventarioPage() {
   };
 
   const handleEnviarInventario = () => {
-  if (!escola || !solicitante || !matricula || !salaResponsavel) {
-  alert("Por favor, preencha todos os campos obrigatorios.");
-  return;
+    if (!escola || !solicitante || !matricula || !salaResponsavel) {
+      alert("Por favor, preencha todos os campos obrigatorios.");
+      return;
     }
 
     const itensPreenchidos = itensInventario.filter((item) => item.numeroPlaca || item.caracteristica);
@@ -162,13 +162,13 @@ export default function InventarioPage() {
       return;
     }
 
-  addInventario({
-  instituicao: escola,
-  solicitante,
-  matricula,
-  salaResponsavel,
-  ano,
-  itens: itensPreenchidos,
+    addInventario({
+      instituicao: escola,
+      solicitante,
+      matricula,
+      salaResponsavel,
+      ano,
+      itens: itensPreenchidos,
     });
 
     setEnviado(true);
@@ -205,19 +205,19 @@ export default function InventarioPage() {
         .replace(/[^a-z0-9\s]/g, "")
         .trim();
     };
-    
+
     const buscaInstNormalizada = normalizar(buscaInstituicao);
     const solicitacoesPatrimonio = todasSolicitacoes.filter((s) => {
       const matchTipo = s.tipo === "patrimonio";
       const instNormalizada = normalizar(s.instituicao);
-      const matchInstituicao = instNormalizada.includes(buscaInstNormalizada) || 
-                               buscaInstNormalizada.includes(instNormalizada);
+      const matchInstituicao = instNormalizada.includes(buscaInstNormalizada) ||
+        buscaInstNormalizada.includes(instNormalizada);
       const matchNome = !buscaNome || normalizar(s.nome).includes(normalizar(buscaNome));
       const matchMatricula = !buscaMatricula || s.matricula.includes(buscaMatricula.trim());
-      
+
       return matchTipo && matchInstituicao && matchNome && matchMatricula;
     });
-    
+
     setSolicitacoesEncontradas(solicitacoesPatrimonio);
     setBuscaRealizada(true);
   };
@@ -245,7 +245,7 @@ export default function InventarioPage() {
 
   const handleBaixarPDFInventario = () => {
     const itensPreenchidos = itensInventario.filter((item) => item.numeroPlaca || item.caracteristica);
-    
+
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const pw = doc.internal.pageSize.getWidth();
     const m = 10;
@@ -370,7 +370,7 @@ export default function InventarioPage() {
                 className="h-11 text-sm border-[#3b82f6] text-[#3b82f6] hover:bg-[#eff6ff]"
               >
                 <Building2 className="w-4 h-4 mr-2" />
-                Inventario por Setor
+                Agente Patrimonial
               </Button>
             </div>
           </div>
@@ -453,11 +453,11 @@ export default function InventarioPage() {
                     </div>
                     <div className="space-y-2">
                       <label className="block text-sm font-medium text-[#475569]">Sala Responsavel *</label>
-                      <Input 
-                        value={salaResponsavel} 
-                        onChange={(e) => setSalaResponsavel(e.target.value)} 
-                        placeholder="Ex: Sala dos professores, Secretaria, Refeitorio" 
-                        className="h-11 text-sm border-[#e2e8f0] bg-white placeholder:text-[#94a3b8]" 
+                      <Input
+                        value={salaResponsavel}
+                        onChange={(e) => setSalaResponsavel(e.target.value)}
+                        placeholder="Ex: Sala dos professores, Secretaria, Refeitorio"
+                        className="h-11 text-sm border-[#e2e8f0] bg-white placeholder:text-[#94a3b8]"
                       />
                     </div>
                   </div>
@@ -535,9 +535,9 @@ export default function InventarioPage() {
                     <Button variant="outline" onClick={fecharFormulario} className="border-[#e2e8f0] text-[#64748b] h-11">
                       Cancelar
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={handleBaixarPDFInventario} 
+                    <Button
+                      variant="outline"
+                      onClick={handleBaixarPDFInventario}
                       className="border-[#111c44] text-[#111c44] hover:bg-[#111c44]/5 h-11"
                       disabled={!escola || itensPreenchidos.length === 0}
                     >
