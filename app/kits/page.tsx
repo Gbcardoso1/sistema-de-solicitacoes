@@ -118,7 +118,7 @@ export default function KitsPage() {
         <Link href="/" className="inline-flex items-center gap-2 text-[#111c44] mb-6 hover:underline text-sm font-medium"><ArrowLeft className="w-4 h-4" /> Voltar</Link>
 
         {/* Dados do Solicitante */}
-        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] shadow-sm overflow-hidden">
+        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
           <div className="px-6 py-4">
             <div className="flex items-center gap-2 mb-5">
               <span className="w-2 h-2 rounded-full bg-[#3b82f6]" />
@@ -142,7 +142,7 @@ export default function KitsPage() {
         </div>
 
         {/* Kits de Aluno */}
-        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] shadow-sm overflow-hidden">
+        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
           <div className="px-6 py-4">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
@@ -196,7 +196,7 @@ export default function KitsPage() {
         </div>
 
         {/* Mochila */}
-        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] shadow-sm overflow-hidden">
+        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
           <div className="px-6 py-4">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
@@ -250,7 +250,7 @@ export default function KitsPage() {
         </div>
 
         {/* Kit de Professor - Polo */}
-        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] shadow-sm overflow-hidden">
+        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
           <div className="px-6 py-4">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">

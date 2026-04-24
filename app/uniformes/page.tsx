@@ -79,7 +79,7 @@ export default function UniformesPage() {
       <div className="max-w-3xl mx-auto px-4 py-8">
         <Link href="/" className="inline-flex items-center gap-2 text-[#111c44] mb-6 hover:underline text-sm font-medium"><ArrowLeft className="w-4 h-4" /> Voltar</Link>
 
-        <div className="mb-5 bg-white rounded-2xl border border-[#d1d5db] shadow-sm overflow-hidden">
+        <div className="mb-5 bg-white rounded-2xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
           <div className="px-5 pt-4 pb-3 border-b border-[#f1f5f9] flex items-center gap-2.5">
             <span className="w-1 h-4 rounded-full bg-[#111c44] inline-block" />
             <h2 className="text-sm font-bold text-[#1e293b] tracking-wide">Dados do Solicitante</h2>
@@ -93,7 +93,7 @@ export default function UniformesPage() {
           </div>
         </div>
 
-        <div className="mb-5 bg-white rounded-2xl border border-[#d1d5db] shadow-sm overflow-hidden">
+        <div className="mb-5 bg-white rounded-2xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
           <div className="px-5 pt-4 pb-3 border-b border-[#f1f5f9] flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <span className="w-1 h-4 rounded-full bg-[#111c44] inline-block" />
@@ -135,7 +135,7 @@ export default function UniformesPage() {
           </div>
         </div>
 
-        <div className="mb-5 bg-white rounded-2xl border border-[#d1d5db] shadow-sm overflow-hidden">
+        <div className="mb-5 bg-white rounded-2xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
           <div className="px-5 pt-4 pb-3 border-b border-[#f1f5f9] flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <span className="w-1 h-4 rounded-full bg-[#111c44] inline-block" />
