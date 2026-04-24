@@ -107,7 +107,7 @@ export default function TransferenciaPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {/* Unidade de Origem */}
-          <div className="bg-white rounded-xl border border-[#e2e8f0] shadow-sm overflow-hidden">
+          <div className="bg-white rounded-xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
             <div className="px-6 py-4">
               <div className="flex items-center gap-2 mb-5">
                 <span className="w-2 h-2 rounded-full bg-[#3b82f6]" />
@@ -134,7 +134,7 @@ export default function TransferenciaPage() {
           </div>
 
           {/* Unidade de Destino */}
-          <div className="bg-white rounded-xl border border-[#e2e8f0] shadow-sm overflow-hidden">
+          <div className="bg-white rounded-xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
             <div className="px-6 py-4">
               <div className="flex items-center gap-2 mb-5">
                 <span className="w-2 h-2 rounded-full bg-[#3b82f6]" />
@@ -162,7 +162,7 @@ export default function TransferenciaPage() {
         </div>
 
         {/* Detalhes da Transferencia */}
-        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] shadow-sm overflow-hidden">
+        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
           <div className="px-6 py-4">
             <div className="flex items-center gap-2 mb-5">
               <span className="w-2 h-2 rounded-full bg-[#3b82f6]" />
@@ -245,7 +245,7 @@ export default function TransferenciaPage() {
         </div>
 
         {/* Itens para Transferencia */}
-        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] shadow-sm overflow-hidden">
+        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
           <div className="px-6 py-4">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
