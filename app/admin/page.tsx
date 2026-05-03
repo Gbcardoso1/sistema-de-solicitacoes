@@ -116,65 +116,7 @@ import {
 
 
 // Dados de exemplo para arrolamentos
-const ARROLAMENTOS_DADOS = [
-  {
-    id: "1",
-    categoria: "CADEIRA",
-    descricao: "ADRIX TELA GIRATORIA SECRETARIA",
-    itens: [
-      { placa: "001234", caracteristicas: "CADEIRA GIRATORIA COM RODIZIOS", marcaModelo: "ADRIX", numSerie: "ADX-2024-001", data: "06/05/2025", local: "SALA 01" },
-      { placa: "001235", caracteristicas: "CADEIRA GIRATORIA COM RODIZIOS", marcaModelo: "ADRIX", numSerie: "ADX-2024-002", data: "06/05/2025", local: "SALA 01" },
-      { placa: "001236", caracteristicas: "CADEIRA GIRATORIA COM RODIZIOS", marcaModelo: "ADRIX", numSerie: "ADX-2024-003", data: "06/05/2025", local: "SALA 02" },
-    ]
-  },
-  {
-    id: "2",
-    categoria: "CADEIRA",
-    descricao: "DE APROXIMACAO FIXA EM S - 2025",
-    itens: [
-      { placa: "002100", caracteristicas: "CADEIRA FIXA EM S SEM BRACO", marcaModelo: "FLEXFORM", numSerie: "FLX-2025-101", data: "10/03/2025", local: "RECEPCAO" },
-      { placa: "002101", caracteristicas: "CADEIRA FIXA EM S SEM BRACO", marcaModelo: "FLEXFORM", numSerie: "FLX-2025-102", data: "10/03/2025", local: "RECEPCAO" },
-    ]
-  },
-  {
-    id: "3",
-    categoria: "CADEIRA",
-    descricao: "QUATRO PE FIXA - 2025",
-    itens: [
-      { placa: "003001", caracteristicas: "CADEIRA FIXA 4 PES ESTOFADA", marcaModelo: "MARELLI", numSerie: "MRL-2025-001", data: "15/01/2025", local: "AUDITORIO" },
-      { placa: "003002", caracteristicas: "CADEIRA FIXA 4 PES ESTOFADA", marcaModelo: "MARELLI", numSerie: "MRL-2025-002", data: "15/01/2025", local: "AUDITORIO" },
-      { placa: "003003", caracteristicas: "CADEIRA FIXA 4 PES ESTOFADA", marcaModelo: "MARELLI", numSerie: "MRL-2025-003", data: "15/01/2025", local: "AUDITORIO" },
-      { placa: "003004", caracteristicas: "CADEIRA FIXA 4 PES ESTOFADA", marcaModelo: "MARELLI", numSerie: "MRL-2025-004", data: "15/01/2025", local: "AUDITORIO" },
-    ]
-  },
-  {
-    id: "4",
-    categoria: "MESA",
-    descricao: "ESCRITORIO RETANGULAR 1.20M",
-    itens: [
-      { placa: "004001", caracteristicas: "MESA RETANGULAR MDF 1.20x0.60", marcaModelo: "MARELLI", numSerie: "MRL-M-001", data: "20/02/2025", local: "SALA 03" },
-      { placa: "004002", caracteristicas: "MESA RETANGULAR MDF 1.20x0.60", marcaModelo: "MARELLI", numSerie: "MRL-M-002", data: "20/02/2025", local: "SALA 04" },
-    ]
-  },
-  {
-    id: "5",
-    categoria: "ARMARIO",
-    descricao: "ACO 2 PORTAS ALTO",
-    itens: [
-      { placa: "005001", caracteristicas: "ARMARIO ACO 2 PORTAS 1.98M", marcaModelo: "W3", numSerie: "W3-ARM-001", data: "01/04/2025", local: "ARQUIVO" },
-    ]
-  },
-  {
-    id: "6",
-    categoria: "COMPUTADOR",
-    descricao: "DESKTOP DELL OPTIPLEX 7090",
-    itens: [
-      { placa: "006001", caracteristicas: "DESKTOP I5 11GEN 8GB 256SSD", marcaModelo: "DELL", numSerie: "DELL-7090-001", data: "05/05/2025", local: "TI" },
-      { placa: "006002", caracteristicas: "DESKTOP I5 11GEN 8GB 256SSD", marcaModelo: "DELL", numSerie: "DELL-7090-002", data: "05/05/2025", local: "TI" },
-      { placa: "006003", caracteristicas: "DESKTOP I5 11GEN 8GB 256SSD", marcaModelo: "DELL", numSerie: "DELL-7090-003", data: "05/05/2025", local: "SALA 01" },
-    ]
-  },
-];
+const ARROLAMENTOS_DADOS: Arrolamento[] = [];
 
 type ArrolamentoItem = { placa: string; caracteristicas: string; marcaModelo: string; numSerie: string; medidas?: string; observacao?: string; data: string; local: string };
 type Arrolamento = { id: string; categoria: string; descricao: string; escola?: string; setor?: string; itens: ArrolamentoItem[] };
