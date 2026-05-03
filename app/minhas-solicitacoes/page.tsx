@@ -226,34 +226,33 @@ export default function MinhasSolicitacoesPage() {
         </div>
 
         {/* Abas de tipo de busca */}
-          <div className="mb-5 bg-white rounded-2xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
-              <div className="px-5 py-3 bg-[#f8fafc] border-b border-[#e2e8f0] flex items-center justify-between">
-                <p className="text-sm font-semibold text-[#1e293b]">Tipo de consulta</p>
-              </div>
-              <div className="px-5 py-3 flex gap-2">
-                <button
-                  onClick={() => handleTipoBuscaChange("individual")}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                    tipoBusca === "individual"
-                      ? "bg-[#111c44] text-white shadow-sm"
-                      : "bg-[#f1f5f9] text-[#64748b] hover:bg-[#e2e8f0]"
-                  }`}
-                >
-                  <FileText className="w-4 h-4" />
-                  Solicitacao Individual
-                </button>
-                <button
-                  onClick={() => handleTipoBuscaChange("minhas")}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                    tipoBusca === "minhas"
-                      ? "bg-[#111c44] text-white shadow-sm"
-                      : "bg-[#f1f5f9] text-[#64748b] hover:bg-[#e2e8f0]"
-                  }`}
-                >
-                  <List className="w-4 h-4" />
-                  Minhas Solicitacoes
-                </button>
-              </div>
+        <div className="mb-5 bg-white rounded-2xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
+          <div className="px-5 py-3 bg-[#f8fafc] border-b border-[#e2e8f0] flex items-center justify-between">
+            <p className="text-sm font-semibold text-[#1e293b]">Tipo de consulta</p>
+          </div>
+          <div className="px-5 py-3 flex gap-2">
+            <button
+              onClick={() => handleTipoBuscaChange("individual")}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                tipoBusca === "individual"
+                  ? "bg-[#111c44] text-white shadow-sm"
+                  : "bg-[#f1f5f9] text-[#64748b] hover:bg-[#e2e8f0]"
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              Solicitacao Individual
+            </button>
+            <button
+              onClick={() => handleTipoBuscaChange("minhas")}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                tipoBusca === "minhas"
+                  ? "bg-[#111c44] text-white shadow-sm"
+                  : "bg-[#f1f5f9] text-[#64748b] hover:bg-[#e2e8f0]"
+              }`}
+            >
+              <List className="w-4 h-4" />
+              Minhas Solicitacoes
+            </button>
           </div>
         </div>
 
