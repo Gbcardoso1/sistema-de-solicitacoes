@@ -141,7 +141,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col bg-[#1a1a4e]">
       {/* Header - Dark Navy */}
-      <header className="relative bg-[#1a1a4e] py-8 lg:py-18">
+      <header className="relative bg-[#1a1a4e] py-7 lg:py-15">
         {/* Login button top-left */}
         <button
           onClick={openLogin}
@@ -153,7 +153,7 @@ export default function HomePage() {
 
         {/* Logo and title centered */}
         <div className="flex flex-col items-center justify-center px-4">
-          <div className="relative w-48 h-30 lg:w-63 lg:h-38 mb--1">
+          <div className="relative w-48 h-30 lg:w-63 lg:h-40 mb--1">
             <Image
               src="/images/logo-saquarema.png"
               alt="Prefeitura de Saquarema"
@@ -170,9 +170,9 @@ export default function HomePage() {
 
       {/* Main content - Cream/Beige background with curved top */}
       <main
-        className="flex-1 relative bg-[#f5f5eb] border-t-6 border-[#172723] mt-0"
+        className="flex-1 relative bg-[#f5f5eb] border-t-7 border-[#2fc7a1] mt-0"
         style={{
-          marginTop: "30px",
+          marginTop: "10px",
           borderTopLeftRadius: "30px",
           borderTopRightRadius: "30px",
         }}
@@ -180,10 +180,10 @@ export default function HomePage() {
         <div className="container mx-auto px-4 py-4 lg:py-6">
           <div className="max-w-6xl mx-auto">
             {/* Welcome Section */}
-            <div className="mb-5 lg:mb-6 text-center">
-              <div className="flex items-center justify-center gap-3 mb-1">
-                <div className="w-1 h-8 bg-[#0fb992] rounded-full"></div>
-                <h1 className="text-3xl lg:text-4xl font-bold text-[#1a1a4e]">Bem-vindo!</h1>
+            <div className="mb-9 lg:mb-7 text-left">
+              <div className="flex items-left justify-left gap-3 mb-1">
+                <div className="w-1 h-5 bg-[#0fb992] rounded-full"></div>
+                <h1 className="text-3xl lg:text-2xl font-bold text-[#1a1a4e]">Bem-vindo!</h1>
               </div>
               <p className="text-gray-600 text-[11px] lg:text-xs">Escolha uma das opções abaixo para iniciar sua solicitação.</p>
             </div>

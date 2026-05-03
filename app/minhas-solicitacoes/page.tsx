@@ -184,7 +184,7 @@ export default function MinhasSolicitacoesPage() {
           <ArrowLeft className="w-4 h-4" /> Voltar
         </Link>
 
-        <div className="mb-5 bg-white rounded-2xl border border-[#d1d5db] overflow-hidden animate-fade-in-up animation-delay-100 hover-lift">
+          <div className="mb-5 bg-white rounded-2xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden animate-fade-in-up animation-delay-100 hover-lift">
           <div className="px-5 pt-4 pb-1">
             <h2 className="text-sm font-bold text-[#1e293b]">Dados do Solicitante</h2>
           </div>
@@ -226,39 +226,40 @@ export default function MinhasSolicitacoesPage() {
         </div>
 
         {/* Abas de tipo de busca */}
-        <div className="mb-5 bg-white rounded-2xl border border-[#d1d5db] overflow-hidden">
-          <div className="px-5 pt-4 pb-3">
-            <h2 className="text-sm font-bold text-[#1e293b] mb-3">Tipo de Busca</h2>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <button
-                onClick={() => handleTipoBuscaChange("individual")}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                  tipoBusca === "individual"
-                    ? "bg-[#111c44] text-white"
-                    : "bg-[#f1f5f9] text-[#64748b] hover:bg-[#e2e8f0]"
-                }`}
-              >
-                <Search className="w-4 h-4" />
-                Buscar Solicitacao Individual
-              </button>
-              <button
-                onClick={() => handleTipoBuscaChange("minhas")}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                  tipoBusca === "minhas"
-                    ? "bg-[#111c44] text-white"
-                    : "bg-[#f1f5f9] text-[#64748b] hover:bg-[#e2e8f0]"
-                }`}
-              >
-                <User className="w-4 h-4" />
-                Buscar Minhas Solicitacoes
-              </button>
-            </div>
+          <div className="mb-5 bg-white rounded-2xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
+              <div className="px-5 py-3 bg-[#f8fafc] border-b border-[#e2e8f0] flex items-center justify-between">
+                <p className="text-sm font-semibold text-[#1e293b]">Tipo de consulta</p>
+              </div>
+              <div className="px-5 py-3 flex gap-2">
+                <button
+                  onClick={() => handleTipoBuscaChange("individual")}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    tipoBusca === "individual"
+                      ? "bg-[#111c44] text-white shadow-sm"
+                      : "bg-[#f1f5f9] text-[#64748b] hover:bg-[#e2e8f0]"
+                  }`}
+                >
+                  <FileText className="w-4 h-4" />
+                  Solicitacao Individual
+                </button>
+                <button
+                  onClick={() => handleTipoBuscaChange("minhas")}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    tipoBusca === "minhas"
+                      ? "bg-[#111c44] text-white shadow-sm"
+                      : "bg-[#f1f5f9] text-[#64748b] hover:bg-[#e2e8f0]"
+                  }`}
+                >
+                  <List className="w-4 h-4" />
+                  Minhas Solicitacoes
+                </button>
+              </div>
           </div>
         </div>
 
         {/* Busca Individual */}
         {tipoBusca === "individual" && (
-          <div className="mb-5 bg-white rounded-2xl border border-[#d1d5db] overflow-hidden">
+          <div className="mb-5 bg-white rounded-2xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
             <div className="px-5 pt-4 pb-1">
               <h2 className="text-sm font-bold text-[#1e293b]">Buscar Solicitacao Individual</h2>
               <p className="text-xs text-[#64748b] mt-1">Busque uma solicitacao especifica pelo numero de pedido.</p>
@@ -307,7 +308,7 @@ export default function MinhasSolicitacoesPage() {
 
         {/* Buscar Minhas Solicitacoes */}
         {tipoBusca === "minhas" && (
-          <div className="mb-5 bg-white rounded-2xl border border-[#d1d5db] overflow-hidden">
+          <div className="mb-5 bg-white rounded-2xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
             <div className="px-5 pt-4 pb-1">
               <h2 className="text-sm font-bold text-[#1e293b]">Buscar Minhas Solicitacoes</h2>
               <p className="text-xs text-[#64748b] mt-1">Veja todas as solicitacoes da sua instituicao.</p>

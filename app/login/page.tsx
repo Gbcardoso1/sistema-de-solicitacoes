@@ -44,7 +44,7 @@ export default function LoginPage() {
             </h2>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 bg-white rounded-xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 p-5">
             <div className="animate-fade-in-up animation-delay-100">
               <Input
                 value={login}
