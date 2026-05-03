@@ -548,12 +548,12 @@ export default function MinhasSolicitacoesPage() {
           </div>
         )}
 
-{tipoBusca === "individual" && buscaRealizada && !solicitacaoEncontrada && !erroSolicitacao && (
-  <div className="bg-white rounded-2xl border border-[#d1d5db] p-8 text-center">
-  <div className="w-16 h-16 rounded-full bg-[#f1f5f9] flex items-center justify-center mx-auto mb-4">
-  <Search className="w-8 h-8 text-[#94a3b8]" />
-  </div>
-  <p className="text-[#64748b]">Nenhuma solicitacao encontrada com este numero.</p>
+        {tipoBusca === "individual" && buscaRealizada && !solicitacaoEncontrada && !erroSolicitacao && (
+          <div className="bg-white rounded-2xl border border-[#d1d5db] p-8 text-center">
+            <div className="w-16 h-16 rounded-full bg-[#f1f5f9] flex items-center justify-center mx-auto mb-4">
+              <Search className="w-8 h-8 text-[#94a3b8]" />
+            </div>
+            <p className="text-[#64748b]">Nenhuma solicitacao encontrada com este numero.</p>
           </div>
         )}
       </div>
