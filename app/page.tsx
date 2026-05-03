@@ -177,51 +177,90 @@ export default function HomePage() {
           borderTopRightRadius: "30px",
         }}
       >
-        <div className="container mx-auto px-4 py-6 lg:py-16">
-          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+        <div className="container mx-auto px-4 py-8 lg:py-12">
+          <div className="max-w-6xl mx-auto">
+            {/* Welcome Section */}
+            <div className="mb-10 lg:mb-14">
+              <div className="flex items-start gap-3 mb-2">
+                <div className="w-1 h-8 bg-[#0fb992] rounded-full mt-1"></div>
+                <h1 className="text-3xl lg:text-4xl font-bold text-[#1a1a4e]">Bem-vindo!</h1>
+              </div>
+              <p className="text-gray-600 text-sm lg:text-base ml-4 font-medium">Escolha uma das opções abaixo para iniciar sua solicitação.</p>
+            </div>
 
-            {/* Left column */}
-            <div className="flex flex-col gap-4">
+            {/* Menu Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5 mb-8">
               {menuItemsLeft.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="group flex items-center gap-4 bg-[#0fb992] hover:bg-[#1c5b4c] text-white px-5 py-5 rounded-lg font-bold transition-all duration-200 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                  className="group bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg hover:border-[#0fb992] transition-all duration-300 active:scale-[0.98]"
                 >
-                  <div className="w-10 h-8 rounded-md bg-white/20 flex items-center justify-center shrink-0">
-                    <item.icon className="w-5 h-5 text-white" strokeWidth={1.5} />
+                  <div className="flex flex-col gap-3 h-full">
+                    <div className="w-12 h-12 rounded-lg bg-[#0fb992] flex items-center justify-center shrink-0">
+                      <item.icon className="w-6 h-6 text-white" strokeWidth={1.5} />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-sm font-bold text-[#1a1a4e] uppercase tracking-tight">{item.label}</h3>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {item.label === "SOLICITAR PATRIMONIO" && "Solicite novos patrimônios."}
+                        {item.label === "SOLICITAR ALMOXARIFADO" && "Solicite materiais do almoxarifado."}
+                        {item.label === "SOLICITAR UNIFORMES" && "Solicite uniformes para sua equipe."}
+                        {item.label === "SOLICITAR KITS" && "Solicite kits disponíveis."}
+                      </p>
+                    </div>
+                    <div className="flex justify-end">
+                      <svg className="w-5 h-5 text-gray-400 group-hover:text-[#0fb992] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
                   </div>
-                  <span className="text-xs font-bold tracking-wide uppercase">{item.label}</span>
                 </Link>
               ))}
-            </div>
 
-            {/* Right column */}
-            <div className="flex flex-col gap-4">
               {menuItemsRight.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="group flex items-center gap-4 bg-[#0fb992] hover:bg-[#1c5b4c] text-white px-5 py-5 rounded-lg font-bold transition-all duration-200 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                  className="group bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg hover:border-[#0fb992] transition-all duration-300 active:scale-[0.98]"
                 >
-                  <div className="w-10 h-8 rounded-md bg-white/20 flex items-center justify-center shrink-0">
-                    <item.icon className="w-5 h-5 text-white" strokeWidth={1.5} />
+                  <div className="flex flex-col gap-3 h-full">
+                    <div className="w-12 h-12 rounded-lg bg-[#0fb992] flex items-center justify-center shrink-0">
+                      <item.icon className="w-6 h-6 text-white" strokeWidth={1.5} />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-sm font-bold text-[#1a1a4e] uppercase tracking-tight">{item.label}</h3>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {item.label === "TRANSFERENCIA DE ITENS" && "Solicite transferência de itens."}
+                        {item.label === "INVENTARIO ANUAL" && "Realize o inventário anual."}
+                        {item.label === "VERIFICAR SOLICITACAO" && "Acompanhe suas solicitações."}
+                        {item.label === "DUVIDAS FREQUENTES" && "Tire suas dúvidas."}
+                      </p>
+                    </div>
+                    <div className="flex justify-end">
+                      <svg className="w-5 h-5 text-gray-400 group-hover:text-[#0fb992] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
                   </div>
-                  <span className="text-xs font-bold tracking-wide uppercase">{item.label}</span>
                 </Link>
               ))}
-
-              {/* Chat Online button */}
-              <button
-                onClick={openChat}
-                className="fixed bottom-6 right-6 w-14 h-14 bg-[#1a1a4e] hover:bg-[#261da0] text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 z-50 group"
-              >
-                <div className="w-10 h-10 rounded-md bg-white/20 flex items-center justify-center shrink-0">
-                  <MessageCircle className="w-6 h-6 text-white transition-transform duration-300 group-hover:scale-110" strokeWidth={1.5} />
-                </div>
-              </button>
-
             </div>
+
+            {/* Footer Text */}
+            <div className="text-center mt-8 lg:mt-12">
+              <p className="text-sm text-[#0fb992] font-medium tracking-wide">Seguro, ágil e eficiente.</p>
+            </div>
+
+            {/* Chat Online button */}
+            <button
+              onClick={openChat}
+              className="fixed bottom-6 right-6 w-14 h-14 bg-[#1a1a4e] hover:bg-[#261da0] text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 z-50 group"
+            >
+              <div className="w-10 h-10 rounded-md bg-white/20 flex items-center justify-center shrink-0">
+                <MessageCircle className="w-6 h-6 text-white transition-transform duration-300 group-hover:scale-110" strokeWidth={1.5} />
+              </div>
+            </button>
 
           </div>
         </div>
