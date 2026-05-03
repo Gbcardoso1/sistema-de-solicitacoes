@@ -177,7 +177,7 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col bg-[#1a1a4e]">
       <style>{animationStyles}</style>
       {/* Header - Dark Navy */}
-      <header className="relative bg-[#1a1a4e] py-7 lg:py-15">
+      <header className="relative bg-[#1a1a4e] py-7 lg:py-10">
         {/* Login button top-left */}
         <button
           onClick={openLogin}
@@ -206,11 +206,11 @@ export default function HomePage() {
 
       {/* Main content - Cream/Beige background with curved top */}
       <main
-        className="flex-1 relative bg-[#f5f5eb] border-t-7 border-[#2fc7a1] mt-0"
+        className="flex-1 relative bg-[#f5f5eb] border-t-8 border-[#2fc7a1] mt-0"
         style={{
-          marginTop: "10px",
-          borderTopLeftRadius: "30px",
-          borderTopRightRadius: "30px",
+          marginTop: "5px",
+          borderTopLeftRadius: "35px",
+          borderTopRightRadius: "35px",
         }}
       >
         <div className="container mx-auto px-4 py-4 lg:py-6">
