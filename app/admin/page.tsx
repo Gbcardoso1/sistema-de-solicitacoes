@@ -1195,11 +1195,11 @@ const mesNumero: Record<string, string> = {
 
 // Grupos para a aba de edicoes
 const GRUPOS_EDICAO = [
-  { id: "almoxarifado", label: "Almoxarifado", categorias: ["papelaria", "cozinha"] },
-  { id: "patrimonio", label: "Patrimonio", categorias: ["patrimonio"] },
-  { id: "uniformes", label: "Uniformes", categorias: ["uniforme", "tamanhosRoupas", "calcado"] },
-  { id: "kits", label: "Kits", categorias: ["kitAluno", "mochila", "kitProfessor", "tamanhosPolo"] },
-  { id: "instituicoes", label: "Instituicoes", categorias: [] },
+{ id: "almoxarifado", label: "Almoxarifado", categorias: ["papelaria", "cozinha", "creche"] },
+{ id: "patrimonio", label: "Patrimonio", categorias: ["patrimonio"] },
+{ id: "uniformes", label: "Uniformes", categorias: ["uniforme", "tamanhosRoupas", "calcado"] },
+{ id: "kits", label: "Kits", categorias: ["kitAluno", "mochila", "kitProfessor", "tamanhosPolo"] },
+{ id: "instituicoes", label: "Instituicoes", categorias: [] },
 ];
 
 function EdicoesView() {
