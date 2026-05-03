@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { addSolicitacao } from "@/lib/solicitacoes-store";
 import { gerarComprovantePDF } from "@/lib/gerar-comprovante-pdf";
 import { getNomesAtivos } from "@/lib/itens-catalogo-store";
+import { getInstituicoesAtivas } from "@/lib/instituicoes-store";
 
 const generos = ["Masculino", "Feminino"];
 
@@ -110,7 +111,14 @@ export default function UniformesPage() {
               </div>
               <div className="space-y-2">
                 <label className="block text-sm text-[#475569]">Instituicao de Ensino</label>
-                <Input placeholder="Nome da instituicao" value={instituicao} onChange={(e) => setInstituicao(e.target.value)} className="h-11 text-sm border-[#e2e8f0] bg-white placeholder:text-[#94a3b8]" />
+                <Select value={instituicao} onValueChange={setInstituicao}>
+                  <SelectTrigger className="h-11 text-sm border-[#e2e8f0] bg-white">
+                    <SelectValue placeholder="Selecione a instituicao" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {getInstituicoesAtivas().map(inst => <SelectItem key={inst} value={inst} className="text-sm">{inst}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
