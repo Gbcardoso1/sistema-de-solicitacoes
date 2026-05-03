@@ -1995,6 +1995,33 @@ export default function AdminPage() {
       addSecao("ITENS", solicitacao.itens.map((i) => ({ desc: i.tipo, qtd: i.quantidade })));
     }
 
+    // Bloco de recebimento
+    const blocoY = 255;
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.3);
+    doc.rect(m, blocoY, cw, 28, "S");
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(17, 28, 68);
+    doc.text("RECEBIMENTO", m + 4, blocoY + 6);
+
+    // Linha: Assinatura e Carimbo
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(107, 114, 128);
+    doc.text("Assinatura e Carimbo:", m + 4, blocoY + 13);
+    doc.setDrawColor(180, 180, 180);
+    doc.line(m + 40, blocoY + 13, m + cw - 4, blocoY + 13);
+
+    // Linha: Nome
+    doc.text("Nome:", m + 4, blocoY + 20);
+    doc.line(m + 16, blocoY + 20, m + (cw / 2) - 4, blocoY + 20);
+
+    // Linha: Data de Recebimento
+    doc.text("Data de Recebimento:", m + (cw / 2) + 2, blocoY + 20);
+    doc.text("____/____/________", m + (cw / 2) + 40, blocoY + 20);
+
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
     doc.setTextColor(156, 163, 175);
