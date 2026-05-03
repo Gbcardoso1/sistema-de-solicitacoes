@@ -21,6 +21,41 @@ import {
   Lock,
   Bluetooth,
 } from "lucide-react";
+
+// Adicionar estilos de animação
+const animationStyles = `
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes pulse-scale {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+
+  .menu-item {
+    animation: slideInRight 0.5s ease-out forwards;
+  }
+
+  .menu-item:nth-child(2) { animation-delay: 0.1s; }
+  .menu-item:nth-child(3) { animation-delay: 0.2s; }
+  .menu-item:nth-child(4) { animation-delay: 0.3s; }
+  .menu-item:nth-child(5) { animation-delay: 0.4s; }
+  .menu-item:nth-child(6) { animation-delay: 0.5s; }
+  .menu-item:nth-child(7) { animation-delay: 0.6s; }
+  .menu-item:nth-child(8) { animation-delay: 0.7s; }
+`;
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -140,6 +175,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#1a1a4e]">
+      <style>{animationStyles}</style>
       {/* Header - Dark Navy */}
       <header className="relative bg-[#1a1a4e] py-7 lg:py-15">
         {/* Login button top-left */}
@@ -194,21 +230,21 @@ export default function HomePage() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="group bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-[#0fb992] transition-all duration-300 active:scale-[0.98] flex items-center gap-4"
+                  className="menu-item group bg-white border border-gray-200 rounded-lg p-4 hover:shadow-xl hover:border-[#0fb992] hover:-translate-y-1 transition-all duration-300 ease-out active:scale-[0.98] flex items-center gap-4"
                 >
-                  <div className="w-14 h-14 rounded-lg bg-[#0fb992] flex items-center justify-center shrink-0">
-                    <item.icon className="w-7 h-7 text-white" strokeWidth={1.5} />
+                  <div className="w-14 h-14 rounded-lg bg-[#0fb992] flex items-center justify-center shrink-0 group-hover:bg-[#0da881] group-hover:shadow-lg group-hover:shadow-[#0fb992]/40 transition-all duration-300">
+                    <item.icon className="w-7 h-7 text-white group-hover:scale-110 transition-transform duration-300" strokeWidth={1.5} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-bold text-[#1a1a4e] uppercase tracking-tight leading-tight">{item.label}</h3>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <h3 className="text-sm font-bold text-[#1a1a4e] uppercase tracking-tight leading-tight group-hover:text-[#0fb992] transition-colors duration-300">{item.label}</h3>
+                    <p className="text-xs text-gray-500 mt-1 group-hover:text-gray-600 transition-colors duration-300">
                       {item.label === "SOLICITAR PATRIMONIO" && "Solicite novos patrimônios."}
                       {item.label === "SOLICITAR ALMOXARIFADO" && "Solicite materiais do almoxarifado."}
                       {item.label === "SOLICITAR UNIFORMES" && "Solicite uniformes para sua equipe."}
                       {item.label === "SOLICITAR KITS" && "Solicite kits disponíveis."}
                     </p>
                   </div>
-                  <svg className="w-5 h-5 text-gray-400 group-hover:text-[#0fb992] transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-400 group-hover:text-[#0fb992] group-hover:translate-x-1 transition-all duration-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </Link>
@@ -218,21 +254,21 @@ export default function HomePage() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="group bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-[#0fb992] transition-all duration-300 active:scale-[0.98] flex items-center gap-4"
+                  className="menu-item group bg-white border border-gray-200 rounded-lg p-4 hover:shadow-xl hover:border-[#0fb992] hover:-translate-y-1 transition-all duration-300 ease-out active:scale-[0.98] flex items-center gap-4"
                 >
-                  <div className="w-14 h-14 rounded-lg bg-[#0fb992] flex items-center justify-center shrink-0">
-                    <item.icon className="w-7 h-7 text-white" strokeWidth={1.5} />
+                  <div className="w-14 h-14 rounded-lg bg-[#0fb992] flex items-center justify-center shrink-0 group-hover:bg-[#0da881] group-hover:shadow-lg group-hover:shadow-[#0fb992]/40 transition-all duration-300">
+                    <item.icon className="w-7 h-7 text-white group-hover:scale-110 transition-transform duration-300" strokeWidth={1.5} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-bold text-[#1a1a4e] uppercase tracking-tight leading-tight">{item.label}</h3>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <h3 className="text-sm font-bold text-[#1a1a4e] uppercase tracking-tight leading-tight group-hover:text-[#0fb992] transition-colors duration-300">{item.label}</h3>
+                    <p className="text-xs text-gray-500 mt-1 group-hover:text-gray-600 transition-colors duration-300">
                       {item.label === "TRANSFERENCIA DE ITENS" && "Solicite transferência de itens."}
                       {item.label === "INVENTARIO ANUAL" && "Realize o inventário anual."}
                       {item.label === "VERIFICAR SOLICITACAO" && "Acompanhe suas solicitações."}
                       {item.label === "DUVIDAS FREQUENTES" && "Tire suas dúvidas."}
                     </p>
                   </div>
-                  <svg className="w-5 h-5 text-gray-400 group-hover:text-[#0fb992] transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-400 group-hover:text-[#0fb992] group-hover:translate-x-1 transition-all duration-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </Link>
