@@ -180,12 +180,12 @@ export default function HomePage() {
         <div className="container mx-auto px-4 py-8 lg:py-12">
           <div className="max-w-6xl mx-auto">
             {/* Welcome Section */}
-            <div className="mb-10 lg:mb-14">
-              <div className="flex items-start gap-3 mb-2">
-                <div className="w-1 h-8 bg-[#0fb992] rounded-full mt-1"></div>
+            <div className="mb-10 lg:mb-14 text-center">
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <div className="w-1 h-8 bg-[#0fb992] rounded-full"></div>
                 <h1 className="text-3xl lg:text-4xl font-bold text-[#1a1a4e]">Bem-vindo!</h1>
               </div>
-              <p className="text-gray-600 text-sm lg:text-base ml-4 font-medium">Escolha uma das opções abaixo para iniciar sua solicitação.</p>
+              <p className="text-gray-600 text-xs lg:text-sm">Escolha uma das opções abaixo para iniciar sua solicitação.</p>
             </div>
 
             {/* Menu Grid */}
@@ -201,7 +201,7 @@ export default function HomePage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-bold text-[#1a1a4e] uppercase tracking-tight leading-tight">{item.label}</h3>
-                    <p className="text-xs text-gray-500 text-center mt-1">
+                    <p className="text-xs text-gray-500 mt-1">
                       {item.label === "SOLICITAR PATRIMONIO" && "Solicite novos patrimônios."}
                       {item.label === "SOLICITAR ALMOXARIFADO" && "Solicite materiais do almoxarifado."}
                       {item.label === "SOLICITAR UNIFORMES" && "Solicite uniformes para sua equipe."}
@@ -225,7 +225,7 @@ export default function HomePage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-bold text-[#1a1a4e] uppercase tracking-tight leading-tight">{item.label}</h3>
-                    <p className="text-xs text-gray-500 text-center mt-1">
+                    <p className="text-xs text-gray-500 mt-1">
                       {item.label === "TRANSFERENCIA DE ITENS" && "Solicite transferência de itens."}
                       {item.label === "INVENTARIO ANUAL" && "Realize o inventário anual."}
                       {item.label === "VERIFICAR SOLICITACAO" && "Acompanhe suas solicitações."}
