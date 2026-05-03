@@ -14,6 +14,7 @@ import { getInstituicoesAtivas } from "@/lib/instituicoes-store";
 
 interface PapelariaItem { id: number; tipo: string; quantidade: number }
 interface CozinhaItem { id: number; tipo: string; quantidade: number }
+interface CrecheItem { id: number; tipo: string; quantidade: number }
 
 export default function AlmoxarifadoPage() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function AlmoxarifadoPage() {
   const [instituicao, setInstituicao] = useState("");
   const [papelaria, setPapelaria] = useState<PapelariaItem[]>([{ id: 1, tipo: "", quantidade: 0 }]);
   const [cozinha, setCozinha] = useState<CozinhaItem[]>([{ id: 1, tipo: "", quantidade: 0 }]);
+  const [creche, setCreche] = useState<CrecheItem[]>([{ id: 1, tipo: "", quantidade: 0 }]);
   const [modalAberto, setModalAberto] = useState(false);
   const [pdfBaixado, setPdfBaixado] = useState(false);
   const [numeroSolicitacao, setNumeroSolicitacao] = useState("");
@@ -29,6 +31,7 @@ export default function AlmoxarifadoPage() {
   // Memoizar listas de itens para evitar recálculos a cada render
   const tiposPapelaria = useMemo(() => getNomesAtivos("papelaria"), []);
   const tiposCozinha = useMemo(() => getNomesAtivos("cozinha"), []);
+  const tiposCreche = useMemo(() => getNomesAtivos("creche"), []);
 
   const addPapelaria = () => setPapelaria([...papelaria, { id: Date.now(), tipo: "", quantidade: 0 }]);
   const removePapelaria = (id: number) => { if (papelaria.length > 1) setPapelaria(papelaria.filter(p => p.id !== id)); };
@@ -40,21 +43,28 @@ export default function AlmoxarifadoPage() {
   const incrementCozinha = (id: number) => setCozinha(cozinha.map(c => c.id === id ? { ...c, quantidade: c.quantidade + 1 } : c));
   const decrementCozinha = (id: number) => setCozinha(cozinha.map(c => c.id === id ? { ...c, quantidade: Math.max(0, c.quantidade - 1) } : c));
 
+  const addCreche = () => setCreche([...creche, { id: Date.now(), tipo: "", quantidade: 0 }]);
+  const removeCreche = (id: number) => { if (creche.length > 1) setCreche(creche.filter(c => c.id !== id)); };
+  const incrementCreche = (id: number) => setCreche(creche.map(c => c.id === id ? { ...c, quantidade: c.quantidade + 1 } : c));
+  const decrementCreche = (id: number) => setCreche(creche.map(c => c.id === id ? { ...c, quantidade: Math.max(0, c.quantidade - 1) } : c));
+
   const itensFiltradosPapelaria = papelaria.filter(p => p.tipo && p.quantidade > 0);
   const itensFiltradosCozinha = cozinha.filter(c => c.tipo && c.quantidade > 0);
+  const itensFiltradosCreche = creche.filter(c => c.tipo && c.quantidade > 0);
 
   const getDadosComprovante = (numSol: string) => {
     const dataHora = new Date().toLocaleString("pt-BR");
     const itensComprovante = [
       ...itensFiltradosPapelaria.map(p => ({ descricao: p.tipo, quantidade: p.quantidade })),
       ...itensFiltradosCozinha.map(c => ({ descricao: c.tipo, quantidade: c.quantidade })),
+      ...itensFiltradosCreche.map(c => ({ descricao: c.tipo, quantidade: c.quantidade })),
     ];
     return { tipo: "almoxarifado", nome, matricula, instituicao, dataHora, itens: itensComprovante, numeroSolicitacao: numSol };
   };
 
   const handleFinalizar = () => {
     if (!nome || !matricula || !instituicao) { alert("Preencha todos os dados do solicitante"); return; }
-    const temItens = itensFiltradosPapelaria.length > 0 || itensFiltradosCozinha.length > 0;
+    const temItens = itensFiltradosPapelaria.length > 0 || itensFiltradosCozinha.length > 0 || itensFiltradosCreche.length > 0;
     if (!temItens) { alert("Adicione pelo menos um item com quantidade maior que zero"); return; }
     const novoNumero = gerarNumeroSolicitacao();
     setNumeroSolicitacao(novoNumero);
@@ -68,7 +78,7 @@ export default function AlmoxarifadoPage() {
   };
 
   const handleConfirmarEnvio = () => {
-    addSolicitacao({ tipo: "almoxarifado", nome, matricula, instituicao, dados: { papelaria, cozinha } }, numeroSolicitacao);
+    addSolicitacao({ tipo: "almoxarifado", nome, matricula, instituicao, dados: { papelaria, cozinha, creche } }, numeroSolicitacao);
     setModalAberto(false);
     alert("Solicitacao finalizada");
     router.push("/");
@@ -359,6 +369,114 @@ export default function AlmoxarifadoPage() {
               <div className="mt-4">
                 <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-[#f1f5f9] text-sm text-[#64748b]">
                   {itensFiltradosCozinha.length} {itensFiltradosCozinha.length === 1 ? 'item adicionado' : 'itens adicionados'}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* CRECHE */}
+        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
+          <div className="px-6 py-4">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#3b82f6]" />
+                <h2 className="text-base font-semibold text-[#1e293b]">
+                  Itens de Creche
+                </h2>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={addCreche}
+                className="h-9 text-sm border-[#3b82f6] text-[#3b82f6] bg-white hover:bg-[#eff6ff] font-medium"
+              >
+                <Plus className="w-4 h-4 mr-1.5" /> Adicionar item
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              {creche.map((item, i) => (
+                <div key={item.id} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-end">
+                    <div className="space-y-2">
+                      <label className="block text-sm text-[#475569]">Item</label>
+                      <Select
+                        value={item.tipo}
+                        onValueChange={(v) => {
+                          const c = [...creche];
+                          c[i].tipo = v;
+                          setCreche(c);
+                        }}
+                      >
+                        <SelectTrigger className="h-11 text-sm border-[#e2e8f0] bg-white">
+                          <SelectValue placeholder="Selecione o item" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {tiposCreche.map((t) => (
+                            <SelectItem key={t} value={t} className="text-sm">
+                              {t}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm text-[#475569]">Quantidade</label>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => decrementCreche(item.id)}
+                          className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </Button>
+                        <Input
+                          type="number"
+                          min="0"
+                          value={item.quantidade}
+                          onChange={(e) => {
+                            const c = [...creche];
+                            c[i].quantidade = parseInt(e.target.value) || 0;
+                            setCreche(c);
+                          }}
+                          className="h-11 w-16 text-sm text-center border-[#e2e8f0] bg-white"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => incrementCreche(item.id)}
+                          className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                        {creche.length > 1 && (
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => removeCreche(item.id)}
+                            className="h-11 w-11 border-[#e2e8f0] text-[#94a3b8] hover:text-red-500 hover:border-red-200 hover:bg-red-50"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  {i < creche.length - 1 && <div className="border-t border-[#f1f5f9] pt-4" />}
+                </div>
+              ))}
+            </div>
+
+            {creche.length > 0 && (
+              <div className="mt-4">
+                <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-[#f1f5f9] text-sm text-[#64748b]">
+                  {itensFiltradosCreche.length} {itensFiltradosCreche.length === 1 ? 'item adicionado' : 'itens adicionados'}
                 </span>
               </div>
             )}

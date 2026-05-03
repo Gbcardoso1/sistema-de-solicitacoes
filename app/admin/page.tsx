@@ -4403,6 +4403,19 @@ const getSidebarDescription = () => {
                       </div>
                     </div>
                   )}
+                  {selectedSolicitacao.dados?.creche && selectedSolicitacao.dados.creche.length > 0 && (
+                    <div className="border border-[#e5e5e5] rounded-lg overflow-hidden">
+                      <div className="bg-pink-500 text-white px-4 py-2 text-sm font-semibold">Itens de Creche</div>
+                      <div className="p-3 space-y-2">
+                        {selectedSolicitacao.dados.creche.map((item: { tipo: string; quantidade: number }, idx: number) => (
+                          <div key={idx} className="bg-[#fafafa] p-2.5 rounded-lg text-xs flex gap-4 border border-[#e5e5e5]">
+                            <span><strong className="text-pink-700">Item:</strong> {item.tipo}</span>
+                            <span><strong className="text-pink-700">Qtd:</strong> {item.quantidade}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
 
@@ -4518,7 +4531,7 @@ const getSidebarDescription = () => {
 
       {/* Modal Editar Solicitacao */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-[95vw] w-[95vw] max-h-[90vh] overflow-y-auto bg-white border-[#e5e5e5] p-8">
+        <DialogContent className="max-w-2xl w-full max-h-[85vh] overflow-y-auto bg-white border-[#e5e5e5] p-6">
           <DialogHeader>
             <DialogTitle className="text-[#1a1a1a] flex items-center gap-2 text-lg">
               <Eye className="w-5 h-5 text-[#111c44]" />
@@ -4844,6 +4857,55 @@ const getSidebarDescription = () => {
                               const copy = { ...editingSolicitacao };
                               copy.cozinha = [...(copy.cozinha || [])];
                               copy.cozinha[idx] = { ...copy.cozinha[idx], quantidade: copy.cozinha[idx].quantidade + 1 };
+                              setEditingSolicitacao(copy);
+                            }}
+                            className="w-7 h-7 flex items-center justify-center rounded border border-[#e5e5e5] text-[#666] hover:bg-[#f0f0f0] text-sm font-bold"
+                          >+</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Creche (almoxarifado) */}
+              {editingSolicitacao.dados?.creche && editingSolicitacao.dados.creche.length > 0 && (
+                <div className="border border-[#e5e5e5] rounded-lg overflow-hidden">
+                  <div className="bg-pink-500 text-white px-4 py-2 text-sm font-semibold">Itens de Creche</div>
+                  <div className="p-3 space-y-2">
+                    {editingSolicitacao.dados.creche.map((item: { tipo: string; quantidade: number }, idx: number) => (
+                      <div key={idx} className="flex items-center gap-3 bg-[#fafafa] p-2.5 rounded-lg border border-[#e5e5e5]">
+                        <span className="flex-1 text-xs text-[#555]">{item.tipo}</span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => {
+                              const copy = { ...editingSolicitacao };
+                              copy.dados = { ...copy.dados };
+                              copy.dados.creche = [...(copy.dados.creche || [])];
+                              copy.dados.creche[idx] = { ...copy.dados.creche[idx], quantidade: Math.max(0, copy.dados.creche[idx].quantidade - 1) };
+                              setEditingSolicitacao(copy);
+                            }}
+                            className="w-7 h-7 flex items-center justify-center rounded border border-[#e5e5e5] text-[#666] hover:bg-[#f0f0f0] text-sm font-bold"
+                          >-</button>
+                          <Input
+                            type="number"
+                            min={0}
+                            value={item.quantidade}
+                            onChange={(e) => {
+                              const copy = { ...editingSolicitacao };
+                              copy.dados = { ...copy.dados };
+                              copy.dados.creche = [...(copy.dados.creche || [])];
+                              copy.dados.creche[idx] = { ...copy.dados.creche[idx], quantidade: Math.max(0, parseInt(e.target.value) || 0) };
+                              setEditingSolicitacao(copy);
+                            }}
+                            className="w-16 h-7 text-center text-sm border-[#e5e5e5]"
+                          />
+                          <button
+                            onClick={() => {
+                              const copy = { ...editingSolicitacao };
+                              copy.dados = { ...copy.dados };
+                              copy.dados.creche = [...(copy.dados.creche || [])];
+                              copy.dados.creche[idx] = { ...copy.dados.creche[idx], quantidade: copy.dados.creche[idx].quantidade + 1 };
                               setEditingSolicitacao(copy);
                             }}
                             className="w-7 h-7 flex items-center justify-center rounded border border-[#e5e5e5] text-[#666] hover:bg-[#f0f0f0] text-sm font-bold"
