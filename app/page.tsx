@@ -177,19 +177,19 @@ export default function HomePage() {
           borderTopRightRadius: "30px",
         }}
       >
-        <div className="container mx-auto px-4 py-8 lg:py-12">
+        <div className="container mx-auto px-4 py-4 lg:py-6">
           <div className="max-w-6xl mx-auto">
             {/* Welcome Section */}
-            <div className="mb-10 lg:mb-14 text-center">
-              <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="mb-5 lg:mb-6 text-center">
+              <div className="flex items-center justify-center gap-3 mb-1">
                 <div className="w-1 h-8 bg-[#0fb992] rounded-full"></div>
                 <h1 className="text-3xl lg:text-4xl font-bold text-[#1a1a4e]">Bem-vindo!</h1>
               </div>
-              <p className="text-gray-600 text-xs lg:text-sm">Escolha uma das opções abaixo para iniciar sua solicitação.</p>
+              <p className="text-gray-600 text-[11px] lg:text-xs">Escolha uma das opções abaixo para iniciar sua solicitação.</p>
             </div>
 
             {/* Menu Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4 mb-4">
               {menuItemsLeft.map((item) => (
                 <Link
                   key={item.href}
@@ -240,8 +240,8 @@ export default function HomePage() {
             </div>
 
             {/* Footer Text */}
-            <div className="text-center mt-8 lg:mt-12">
-              <p className="text-sm text-[#0fb992] font-medium tracking-wide">Seguro, ágil e eficiente.</p>
+            <div className="text-center mt-4 lg:mt-6">
+              <p className="text-xs text-[#0fb992] font-medium tracking-wide">Seguro, ágil e eficiente.</p>
             </div>
 
             {/* Chat Online button */}
