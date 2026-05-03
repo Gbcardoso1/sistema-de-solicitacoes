@@ -3089,9 +3089,169 @@ const getSidebarDescription = () => {
                             </SelectContent>
                           </Select>
                         </div>
-                        <Button variant="outline" onClick={() => setInventarioSetorDialogOpen(false)} className="h-8 text-sm">
-                          Fechar
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              const inv = inventarioSetorSelecionado;
+                              const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+                              const pw = doc.internal.pageSize.getWidth();
+                              const ph = doc.internal.pageSize.getHeight();
+                              const m = 15;
+                              const cw = pw - m * 2;
+                              let y = 10;
+                              const anoAtual = new Date().getFullYear();
+
+                              doc.setFontSize(9);
+                              doc.setFont("helvetica", "bold");
+                              doc.setTextColor(0, 0, 0);
+                              doc.text("ESTADO DO RIO DE JANEIRO", pw / 2, y, { align: "center" });
+                              y += 4;
+                              doc.text("PREFEITURA MUNICIPAL DE SAQUAREMA", pw / 2, y, { align: "center" });
+                              y += 4;
+                              doc.setFont("helvetica", "normal");
+                              doc.setFontSize(8);
+                              doc.text("Secretaria Municipal de Administracao, Receita e Tributacao", pw / 2, y, { align: "center" });
+                              y += 3;
+                              doc.text("Setor de Patrimonio", pw / 2, y, { align: "center" });
+                              y += 8;
+
+                              doc.setDrawColor(0, 0, 0);
+                              doc.setLineWidth(0.5);
+                              doc.line(m, y, pw - m, y);
+                              y += 6;
+
+                              doc.setFont("helvetica", "bold");
+                              doc.setFontSize(11);
+                              doc.text(`LEVANTAMENTO PRELIMINAR PARA INVENTARIO ANUAL - ${anoAtual}/${anoAtual + 1}`, pw / 2, y, { align: "center" });
+                              y += 5;
+                              doc.text("= PATRIMONIO MOBILIARIO =", pw / 2, y, { align: "center" });
+                              y += 8;
+
+                              doc.setFont("helvetica", "normal");
+                              doc.setFontSize(7);
+                              doc.text("Base Legal: C. F. 1988: Art. 5, II e LXXIII e Art. 23, I; C. Estadual: Art. 11; Art. 73, I e Art. 360, e Lei Organica: Art. 10, X, XVIII; Art. 11, I e III", m, y);
+                              y += 6;
+
+                              doc.setDrawColor(0, 0, 0);
+                              doc.setLineWidth(0.3);
+                              doc.rect(m, y, cw, 10);
+                              doc.setFont("helvetica", "bold");
+                              doc.setFontSize(8);
+                              doc.text("Secretaria + Orgao Responsavel:", m + 2, y + 4);
+                              doc.setFont("helvetica", "normal");
+                              doc.text(inv.secretaria.toUpperCase(), m + 2, y + 8);
+                              y += 10;
+
+                              doc.rect(m, y, cw, 10);
+                              doc.setFont("helvetica", "bold");
+                              doc.text("Denominacao do Imovel + Setor de Responsabilidade:", m + 2, y + 4);
+                              doc.setFont("helvetica", "normal");
+                              doc.text(inv.denominacao.toUpperCase(), m + 2, y + 8);
+                              y += 10;
+
+                              doc.rect(m, y, cw, 10);
+                              doc.setFont("helvetica", "bold");
+                              doc.text("Endereco:", m + 2, y + 4);
+                              doc.setFont("helvetica", "normal");
+                              doc.text(inv.endereco.toUpperCase(), m + 2, y + 8);
+                              y += 10;
+
+                              if (inv.salaResponsavel) {
+                                doc.rect(m, y, cw, 10);
+                                doc.setFont("helvetica", "bold");
+                                doc.text("Sala Responsavel:", m + 2, y + 4);
+                                doc.setFont("helvetica", "normal");
+                                doc.text(inv.salaResponsavel.toUpperCase(), m + 2, y + 8);
+                                y += 10;
+                              }
+
+                              doc.rect(m, y, cw, 14);
+                              doc.setFont("helvetica", "bold");
+                              doc.setFontSize(7);
+                              doc.text("Responsavel pelo Orgao", m + cw / 2, y + 3, { align: "center" });
+                              doc.line(m, y + 5, pw - m, y + 5);
+                              doc.setFont("helvetica", "normal");
+                              doc.text("Nome:", m + 2, y + 9);
+                              doc.text(inv.respNome.toUpperCase(), m + 15, y + 9);
+                              doc.text("CPF:", m + cw / 2, y + 9);
+                              doc.text(inv.respCPF, m + cw / 2 + 12, y + 9);
+                              doc.text("Matricula:", m + cw * 0.75, y + 9);
+                              doc.text(inv.respMatricula, m + cw * 0.75 + 18, y + 9);
+                              y += 14;
+
+                              doc.rect(m, y, cw, 14);
+                              doc.setFont("helvetica", "bold");
+                              doc.text("Agente Patrimonial", m + cw / 2, y + 3, { align: "center" });
+                              doc.line(m, y + 5, pw - m, y + 5);
+                              doc.setFont("helvetica", "normal");
+                              doc.text("Nome:", m + 2, y + 9);
+                              doc.text(inv.agenteNome.toUpperCase(), m + 15, y + 9);
+                              doc.text("CPF:", m + cw / 2, y + 9);
+                              doc.text(inv.agenteCPF, m + cw / 2 + 12, y + 9);
+                              doc.text("Matricula:", m + cw * 0.75, y + 9);
+                              doc.text(inv.agenteMatricula, m + cw * 0.75 + 18, y + 9);
+                              y += 16;
+
+                              // Tabela de itens
+                              const colW = cw / 4;
+                              doc.rect(m, y, cw, 6);
+                              doc.setFont("helvetica", "bold");
+                              doc.setFontSize(7);
+                              doc.text("Codigo Bem", m + 2, y + 4);
+                              doc.text("Descricao Generica", m + colW, y + 4);
+                              doc.text("Codigo Bem", m + colW * 2, y + 4);
+                              doc.text("Descricao Generica", m + colW * 3, y + 4);
+                              doc.line(m + colW, y, m + colW, y + 6);
+                              doc.line(m + colW * 2, y, m + colW * 2, y + 6);
+                              doc.line(m + colW * 3, y, m + colW * 3, y + 6);
+                              y += 6;
+
+                              doc.setFont("helvetica", "normal");
+                              const rowHeight = 6;
+                              const itensDoInv = inv.itens || [];
+                              const totalRows = Math.max(10, Math.ceil(itensDoInv.length / 2));
+                              
+                              for (let i = 0; i < totalRows; i++) {
+                                if (y > ph - 30) {
+                                  doc.addPage();
+                                  y = 20;
+                                }
+                                doc.rect(m, y, cw, rowHeight);
+                                doc.line(m + colW, y, m + colW, y + rowHeight);
+                                doc.line(m + colW * 2, y, m + colW * 2, y + rowHeight);
+                                doc.line(m + colW * 3, y, m + colW * 3, y + rowHeight);
+
+                                const leftIdx = i * 2;
+                                const rightIdx = i * 2 + 1;
+
+                                if (itensDoInv[leftIdx]) {
+                                  doc.text(itensDoInv[leftIdx].codigo || "", m + 2, y + 4);
+                                  doc.text(itensDoInv[leftIdx].descricao.substring(0, 25), m + colW + 2, y + 4);
+                                }
+                                if (itensDoInv[rightIdx]) {
+                                  doc.text(itensDoInv[rightIdx].codigo || "", m + colW * 2 + 2, y + 4);
+                                  doc.text(itensDoInv[rightIdx].descricao.substring(0, 25), m + colW * 3 + 2, y + 4);
+                                }
+                                y += rowHeight;
+                              }
+
+                              y += 8;
+                              doc.setFontSize(6);
+                              doc.text("Rua Coronel Madureira, 77 - Centro - Saquarema - RJ - CEP: 28990-756", pw / 2, ph - 10, { align: "center" });
+                              doc.text("CNPJ / MF: 32.147.670/0001-21", pw / 2, ph - 6, { align: "center" });
+
+                              doc.save(`Inventario_Setor_${inv.denominacao.replace(/\s+/g, "_").substring(0, 30)}_${anoAtual}.pdf`);
+                            }}
+                            className="h-8 text-sm border-[#111c44] text-[#111c44] hover:bg-[#111c44]/5"
+                          >
+                            <Download className="w-3.5 h-3.5 mr-1.5" />
+                            PDF
+                          </Button>
+                          <Button variant="outline" onClick={() => setInventarioSetorDialogOpen(false)} className="h-8 text-sm">
+                            Fechar
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   )}
