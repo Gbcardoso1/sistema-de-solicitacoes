@@ -198,7 +198,7 @@ export default function HomePage() {
               priority
             />
           </div>
-          <p className="text-white/60 text-xs lg:text-xs font-medium tracking-[0.15em] uppercase text-center">
+          <p className="text-white/60 text-xs lg:text-xs font-small tracking-[0.10em] uppercase text-center">
             Sistema Integrado de Solicitacoes Digitais
           </p>
         </div>
@@ -206,18 +206,18 @@ export default function HomePage() {
 
       {/* Main content - Cream/Beige background with curved top */}
       <main
-        className="flex-1 relative bg-[#f5f5eb] border-t-8 border-[#2fc7a1] mt-0"
+        className="flex-1 relative bg-[#f5f5eb] border-t-4 border-[#f5e60f] mt-0"
         style={{
-          marginTop: "5px",
-          borderTopLeftRadius: "35px",
-          borderTopRightRadius: "35px",
+          marginTop: "10px",
+          borderTopLeftRadius: "20px",
+          borderTopRightRadius: "20px",
         }}
       >
-        <div className="container mx-auto px-4 py-4 lg:py-6">
+        <div className="container mx-auto px-4 py-5 lg:py-6">
           <div className="max-w-6xl mx-auto">
             {/* Welcome Section */}
-            <div className="mb-9 lg:mb-7 text-left">
-              <div className="flex items-left justify-left gap-3 mb-1">
+            <div className="mb-20 lg:mb-8 text-left">
+              <div className="flex items-left justify-left gap-3 mb-5">
                 <div className="w-1 h-5 bg-[#0fb992] rounded-full"></div>
                 <h1 className="text-3xl lg:text-2xl font-bold text-[#1a1a4e]">Bem-vindo!</h1>
               </div>
