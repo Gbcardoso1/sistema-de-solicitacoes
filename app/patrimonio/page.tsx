@@ -54,8 +54,8 @@ export default function PatrimonioPage() {
     setPdfBaixado(false);
   };
 
-  const handleBaixarPDF = () => {
-    gerarComprovantePDF(getDadosComprovante(numeroSolicitacao));
+  const handleBaixarPDF = async () => {
+    await gerarComprovantePDF(getDadosComprovante(numeroSolicitacao));
     setPdfBaixado(true);
   };
 

@@ -152,12 +152,12 @@ export default function MinhasSolicitacoesPage() {
     return itens;
   };
 
-  const handleBaixarPDF = () => {
+  const handleBaixarPDF = async () => {
     if (!solicitacaoEncontrada) return;
     
     const itens = getItensParaPDF(solicitacaoEncontrada);
     
-    gerarComprovantePDF({
+    await gerarComprovantePDF({
       tipo: solicitacaoEncontrada.tipo,
       nome: solicitacaoEncontrada.nome,
       matricula: solicitacaoEncontrada.matricula,

@@ -43,7 +43,7 @@ const tipoLabels: Record<string, string> = {
   kits: "Kits",
 };
 
-export function gerarComprovantePDF(dados: DadosComprovante) {
+export async function gerarComprovantePDF(dados: DadosComprovante) {
   const tipoLabel = tipoLabels[dados.tipo] || dados.tipo;
   const totalItens = dados.itens.reduce((acc, item) => acc + item.quantidade, 0);
 
@@ -53,21 +53,42 @@ export function gerarComprovantePDF(dados: DadosComprovante) {
   const contentWidth = pageWidth - margin * 2;
   let y = 0;
 
+  // --- Logo Header ---
+  try {
+    const logoImg = new Image();
+    logoImg.crossOrigin = "anonymous";
+    await new Promise<void>((resolve, reject) => {
+      logoImg.onload = () => resolve();
+      logoImg.onerror = () => reject();
+      logoImg.src = "/images/logo-prefeitura-saquarema.png";
+    });
+    
+    // Add logo - centered at top
+    const logoWidth = 100;
+    const logoHeight = 25;
+    const logoX = (pageWidth - logoWidth) / 2;
+    doc.addImage(logoImg, "PNG", logoX, 8, logoWidth, logoHeight);
+    y = 40;
+  } catch {
+    // If logo fails to load, start without it
+    y = 15;
+  }
+
   // --- Header ---
   doc.setFillColor(13, 59, 140);
-  doc.rect(0, 0, pageWidth, 32, "F");
+  doc.rect(0, y, pageWidth, 32, "F");
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
   doc.setTextColor(255, 255, 255);
-  doc.text("COMPROVANTE DE SOLICITACAO", pageWidth / 2, 15, { align: "center" });
+  doc.text("COMPROVANTE DE SOLICITACAO", pageWidth / 2, y + 15, { align: "center" });
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
   doc.setTextColor(180, 200, 230);
-  doc.text(tipoLabel, pageWidth / 2, 24, { align: "center" });
+  doc.text(tipoLabel, pageWidth / 2, y + 24, { align: "center" });
 
-  y = 42;
+  y = y + 42;
 
   // --- Dados do Solicitante ---
   doc.setFont("helvetica", "bold");

@@ -1816,20 +1816,39 @@ export default function AdminPage() {
     setDialogOpen(true);
   };
 
-  const handleBaixarPDF = (solicitacao: Solicitacao) => {
+  const handleBaixarPDF = async (solicitacao: Solicitacao) => {
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const pw = doc.internal.pageSize.getWidth();
     const m = 15;
     const cw = pw - m * 2;
     let y = 0;
 
+    // --- Logo Header ---
+    try {
+      const logoImg = new Image();
+      logoImg.crossOrigin = "anonymous";
+      await new Promise<void>((resolve, reject) => {
+        logoImg.onload = () => resolve();
+        logoImg.onerror = () => reject();
+        logoImg.src = "/images/logo-prefeitura-saquarema.png";
+      });
+      
+      const logoWidth = 100;
+      const logoHeight = 25;
+      const logoX = (pw - logoWidth) / 2;
+      doc.addImage(logoImg, "PNG", logoX, 8, logoWidth, logoHeight);
+      y = 40;
+    } catch {
+      y = 8;
+    }
+
     doc.setFillColor(17, 28, 68);
-    doc.rect(0, 0, pw, 28, "F");
+    doc.rect(0, y, pw, 28, "F");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.setTextColor(255, 255, 255);
-    doc.text("SOLICITACAO - " + solicitacao.tipo.toUpperCase(), pw / 2, 17, { align: "center" });
-    y = 38;
+    doc.text("SOLICITACAO - " + solicitacao.tipo.toUpperCase(), pw / 2, y + 17, { align: "center" });
+    y = y + 38;
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
