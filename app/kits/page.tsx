@@ -14,7 +14,7 @@ import { getInstituicoesAtivas } from "@/lib/instituicoes-store";
 
 interface KitAlunoItem { id: number; tipo: string; quantidade: number }
 interface MochilaItem { id: number; tamanho: string; quantidade: number }
-interface KitProfItem { id: number; kit: string; quantidade: number; tamanhoPolo: string; quantidadePolo: number }
+interface KitProfItem { id: number; kit: string; quantidade: number }
 
 export default function KitsPage() {
   const router = useRouter();
@@ -23,19 +23,18 @@ export default function KitsPage() {
   const [instituicao, setInstituicao] = useState("");
   const [kitsAluno, setKitsAluno] = useState<KitAlunoItem[]>([{ id: 1, tipo: "", quantidade: 0 }]);
   const [mochilas, setMochilas] = useState<MochilaItem[]>([{ id: 1, tamanho: "", quantidade: 0 }]);
-  const [kitsProf, setKitsProf] = useState<KitProfItem[]>([{ id: 1, kit: "Kit Professor", quantidade: 0, tamanhoPolo: "", quantidadePolo: 0 }]);
+  const [kitsProf, setKitsProf] = useState<KitProfItem[]>([{ id: 1, kit: "Kit Professor", quantidade: 0 }]);
   const [modalAberto, setModalAberto] = useState(false);
   const [pdfBaixado, setPdfBaixado] = useState(false);
 
   const tiposKitAluno = getNomesAtivos("kitAluno");
   const tamanhosMochila = getNomesAtivos("mochila");
-  const tamanhosPolo = getNomesAtivos("tamanhosPolo");
 
   const addKit = () => setKitsAluno([...kitsAluno, { id: Date.now(), tipo: "", quantidade: 0 }]);
   const removeKit = (id: number) => { if (kitsAluno.length > 1) setKitsAluno(kitsAluno.filter(k => k.id !== id)); };
   const addMochila = () => setMochilas([...mochilas, { id: Date.now(), tamanho: "", quantidade: 0 }]);
   const removeMochila = (id: number) => { if (mochilas.length > 1) setMochilas(mochilas.filter(m => m.id !== id)); };
-  const addProf = () => setKitsProf([...kitsProf, { id: Date.now(), kit: "Kit Professor", quantidade: 0, tamanhoPolo: "", quantidadePolo: 0 }]);
+  const addProf = () => setKitsProf([...kitsProf, { id: Date.now(), kit: "Kit Professor", quantidade: 0 }]);
   const removeProf = (id: number) => { if (kitsProf.length > 1) setKitsProf(kitsProf.filter(k => k.id !== id)); };
 
   const incrementKitQtd = (id: number) => {
@@ -59,16 +58,9 @@ export default function KitsPage() {
     setKitsProf(kitsProf.map(k => k.id === id ? { ...k, quantidade: Math.max(0, k.quantidade - 1) } : k));
   };
 
-  const incrementPoloQtd = (id: number) => {
-    setKitsProf(kitsProf.map(k => k.id === id ? { ...k, quantidadePolo: k.quantidadePolo + 1 } : k));
-  };
-  const decrementPoloQtd = (id: number) => {
-    setKitsProf(kitsProf.map(k => k.id === id ? { ...k, quantidadePolo: Math.max(0, k.quantidadePolo - 1) } : k));
-  };
-
   const kitsFiltrados = kitsAluno.filter(k => k.tipo && k.quantidade > 0);
   const mochilasFiltradas = mochilas.filter(m => m.tamanho && m.quantidade > 0);
-  const profFiltrados = kitsProf.filter(k => k.quantidade > 0 || k.quantidadePolo > 0);
+  const profFiltrados = kitsProf.filter(k => k.quantidade > 0);
 
   const totalItens = kitsFiltrados.length + mochilasFiltradas.length + profFiltrados.length;
 
@@ -78,7 +70,6 @@ export default function KitsPage() {
       ...kitsFiltrados.map(k => ({ descricao: `Kit Aluno: ${k.tipo}`, quantidade: k.quantidade })),
       ...mochilasFiltradas.map(m => ({ descricao: `Mochila: ${m.tamanho}`, quantidade: m.quantidade })),
       ...kitsProf.filter(k => k.quantidade > 0).map(k => ({ descricao: `Kit Professor`, quantidade: k.quantidade })),
-      ...kitsProf.filter(k => k.tamanhoPolo && k.quantidadePolo > 0).map(k => ({ descricao: `Polo Professor: ${k.tamanhoPolo}`, quantidade: k.quantidadePolo })),
     ];
     return { tipo: "kits", nome, matricula, instituicao, dataHora, itens: itensComprovante };
   };
@@ -99,10 +90,9 @@ export default function KitsPage() {
       dados: { kitsAluno, mochilas, kitsProf },
       kitsAluno: kitsAluno.reduce((a, k) => a + k.quantidade, 0),
       mochilas: mochilas.reduce((a, m) => a + m.quantidade, 0),
-      polosProf: kitsProf.reduce((a, k) => a + k.quantidadePolo, 0),
       kitsAlunoDetalhes: kitsFiltrados.map(k => ({ tipo: k.tipo, quantidade: k.quantidade })),
       mochilasDetalhes: mochilasFiltradas.map(m => ({ tipo: m.tamanho, quantidade: m.quantidade })),
-      polosProfDetalhes: kitsProf.filter(k => k.quantidadePolo > 0).map(k => ({ tipo: k.kit, tamanho: k.tamanhoPolo, quantidade: k.quantidadePolo })),
+      kitsProfDetalhes: kitsProf.filter(k => k.quantidade > 0).map(k => ({ tipo: k.kit, quantidade: k.quantidade })),
     });
     setModalAberto(false);
     alert("Solicitacao enviada com sucesso!");
@@ -257,70 +247,46 @@ export default function KitsPage() {
           </div>
         </div>
 
-        {/* Kit de Professor - Polo */}
+        {/* Kit de Professor */}
         <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
           <div className="px-6 py-4">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#3b82f6]" />
-                <h2 className="text-base font-semibold text-[#1e293b]">Kit de Professor - Polo</h2>
+                <h2 className="text-base font-semibold text-[#1e293b]">Kit de Professor</h2>
               </div>
               <Button variant="outline" size="sm" onClick={addProf} className="h-9 text-sm border-[#3b82f6] text-[#3b82f6] bg-white hover:bg-[#eff6ff] font-medium">
                 <Plus className="w-4 h-4 mr-1.5" /> Adicionar item
               </Button>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4">
               {kitsProf.map((k, i) => (
-                <div key={k.id} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-end">
-                    <div className="space-y-2">
-                      <label className="block text-sm text-[#475569]">Selecionar Kit de Professor</label>
-                      <Select value={k.kit} disabled>
-                        <SelectTrigger className="h-11 text-sm border-[#e2e8f0] bg-white"><SelectValue /></SelectTrigger>
-                        <SelectContent><SelectItem value="Kit Professor">Kit Professor</SelectItem></SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="block text-sm text-[#475569]">Quantidade</label>
-                      <div className="flex items-center gap-1">
-                        <Button type="button" variant="outline" size="icon" onClick={() => decrementProfQtd(k.id)} className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]">
-                          <Minus className="w-4 h-4" />
+                <div key={k.id} className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-end">
+                  <div className="space-y-2">
+                    <label className="block text-sm text-[#475569]">Selecionar Kit de Professor</label>
+                    <Select value={k.kit} disabled>
+                      <SelectTrigger className="h-11 text-sm border-[#e2e8f0] bg-white"><SelectValue /></SelectTrigger>
+                      <SelectContent><SelectItem value="Kit Professor">Kit Professor</SelectItem></SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-sm text-[#475569]">Quantidade</label>
+                    <div className="flex items-center gap-1">
+                      <Button type="button" variant="outline" size="icon" onClick={() => decrementProfQtd(k.id)} className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]">
+                        <Minus className="w-4 h-4" />
+                      </Button>
+                      <Input type="number" min="0" value={k.quantidade} onChange={(e) => { const arr = [...kitsProf]; arr[i].quantidade = parseInt(e.target.value) || 0; setKitsProf(arr); }} className="h-11 w-16 text-sm text-center border-[#e2e8f0] bg-white" />
+                      <Button type="button" variant="outline" size="icon" onClick={() => incrementProfQtd(k.id)} className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]">
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                      {kitsProf.length > 1 && (
+                        <Button variant="outline" size="icon" onClick={() => removeProf(k.id)} className="h-11 w-11 border-[#e2e8f0] text-[#94a3b8] hover:text-red-500 hover:border-red-200 hover:bg-red-50">
+                          <X className="w-4 h-4" />
                         </Button>
-                        <Input type="number" min="0" value={k.quantidade} onChange={(e) => { const arr = [...kitsProf]; arr[i].quantidade = parseInt(e.target.value) || 0; setKitsProf(arr); }} className="h-11 w-16 text-sm text-center border-[#e2e8f0] bg-white" />
-                        <Button type="button" variant="outline" size="icon" onClick={() => incrementProfQtd(k.id)} className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]">
-                          <Plus className="w-4 h-4" />
-                        </Button>
-                        {kitsProf.length > 1 && (
-                          <Button variant="outline" size="icon" onClick={() => removeProf(k.id)} className="h-11 w-11 border-[#e2e8f0] text-[#94a3b8] hover:text-red-500 hover:border-red-200 hover:bg-red-50">
-                            <X className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
+                      )}
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-end">
-                    <div className="space-y-2">
-                      <label className="block text-sm text-[#475569]">Tamanho da Polo</label>
-                      <Select value={k.tamanhoPolo} onValueChange={(v) => { const arr = [...kitsProf]; arr[i].tamanhoPolo = v; setKitsProf(arr); }}>
-                        <SelectTrigger className="h-11 text-sm border-[#e2e8f0] bg-white"><SelectValue placeholder="Selecione o tamanho" /></SelectTrigger>
-                        <SelectContent>{tamanhosPolo.map(t => <SelectItem key={t} value={t} className="text-sm">{t}</SelectItem>)}</SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="block text-sm text-[#475569]">Quantidade</label>
-                      <div className="flex items-center gap-1">
-                        <Button type="button" variant="outline" size="icon" onClick={() => decrementPoloQtd(k.id)} className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]">
-                          <Minus className="w-4 h-4" />
-                        </Button>
-                        <Input type="number" min="0" value={k.quantidadePolo} onChange={(e) => { const arr = [...kitsProf]; arr[i].quantidadePolo = parseInt(e.target.value) || 0; setKitsProf(arr); }} className="h-11 w-16 text-sm text-center border-[#e2e8f0] bg-white" />
-                        <Button type="button" variant="outline" size="icon" onClick={() => incrementPoloQtd(k.id)} className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]">
-                          <Plus className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                  {i < kitsProf.length - 1 && <div className="border-t border-[#f1f5f9] pt-4" />}
                 </div>
               ))}
             </div>

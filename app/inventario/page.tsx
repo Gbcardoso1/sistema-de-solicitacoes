@@ -24,7 +24,7 @@ export default function InventarioPage() {
   const [solicitante, setSolicitante] = useState("");
   const [matricula, setMatricula] = useState("");
   const [ano, setAno] = useState(new Date().getFullYear().toString());
-  const [salaResponsavel, setSalaResponsavel] = useState("");
+  
   const [enviado, setEnviado] = useState(false);
   const [pdfInventarioBaixado, setPdfInventarioBaixado] = useState(false);
   const [itensInventario, setItensInventario] = useState<InventarioItem[]>([
@@ -151,7 +151,7 @@ export default function InventarioPage() {
   };
 
   const handleEnviarInventario = () => {
-    if (!escola || !solicitante || !matricula || !salaResponsavel) {
+    if (!escola || !solicitante || !matricula) {
       alert("Por favor, preencha todos os campos obrigatorios.");
       return;
     }
@@ -166,7 +166,6 @@ export default function InventarioPage() {
       instituicao: escola,
       solicitante,
       matricula,
-      salaResponsavel,
       ano,
       itens: itensPreenchidos,
     });
@@ -181,7 +180,6 @@ export default function InventarioPage() {
     setSecretaria("SMECICT");
     setSolicitante("");
     setMatricula("");
-    setTermoResponsabilidade(false);
     setItensInventario([
       { id: "1", numeroPlaca: "", caracteristica: "", marcaModelo: "", numeroSerie: "", medidas: "", observacao: "", setor: "" },
       { id: "2", numeroPlaca: "", caracteristica: "", marcaModelo: "", numeroSerie: "", medidas: "", observacao: "", setor: "" },
@@ -285,8 +283,8 @@ export default function InventarioPage() {
     doc.text(`Folha: 1`, pw - m - 20, y);
     y += 8;
 
-    const cols = [m, m + 25, m + 85, m + 105, m + 130, m + 150, m + 170];
-    const colHeaders = ["N Placa", "Caracteristica", "Setor", "Marca/Modelo", "N Serie", "Medidas", "Obs."];
+    const cols = [m, m + 25, m + 75, m + 100, m + 125, m + 145, m + 165];
+    const colHeaders = ["N Placa", "Caracteristica", "Marca/Modelo", "N Serie", "Medidas", "Obs.", "Sala Resp."];
     doc.setFillColor(240, 240, 240);
     doc.rect(m, y - 3, pw - m * 2, 7, "F");
     doc.setFont("helvetica", "bold");
@@ -303,12 +301,12 @@ export default function InventarioPage() {
       doc.setDrawColor(200, 200, 200);
       doc.line(m, y + 3, pw - m, y + 3);
       doc.text(item.numeroPlaca || "-", cols[0], y);
-      doc.text((item.caracteristica || "-").substring(0, 35), cols[1], y);
-      doc.text((item.setor || "-").substring(0, 12), cols[2], y);
-      doc.text((item.marcaModelo || "-").substring(0, 12), cols[3], y);
-      doc.text((item.numeroSerie || "-").substring(0, 10), cols[4], y);
-      doc.text((item.medidas || "-").substring(0, 10), cols[5], y);
-      doc.text((item.observacao || "-").substring(0, 12), cols[6], y);
+      doc.text((item.caracteristica || "-").substring(0, 30), cols[1], y);
+      doc.text((item.marcaModelo || "-").substring(0, 12), cols[2], y);
+      doc.text((item.numeroSerie || "-").substring(0, 10), cols[3], y);
+      doc.text((item.medidas || "-").substring(0, 10), cols[4], y);
+      doc.text((item.observacao || "-").substring(0, 10), cols[5], y);
+      doc.text((item.setor || "-").substring(0, 12), cols[6], y);
       y += 7;
     });
 
@@ -442,7 +440,7 @@ export default function InventarioPage() {
                       </Select>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
                     <div className="space-y-2">
                       <label className="block text-sm text-[#475569]">Nome do Solicitante *</label>
                       <Input value={solicitante} onChange={(e) => setSolicitante(e.target.value)} placeholder="Seu nome completo" className="h-11 text-sm border-[#e2e8f0] bg-white placeholder:text-[#94a3b8]" />
@@ -450,15 +448,6 @@ export default function InventarioPage() {
                     <div className="space-y-2">
                       <label className="block text-sm text-[#475569]">Matricula *</label>
                       <Input value={matricula} onChange={(e) => setMatricula(e.target.value)} placeholder="Sua matricula" className="h-11 text-sm border-[#e2e8f0] bg-white placeholder:text-[#94a3b8]" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-[#475569]">Sala Responsavel *</label>
-                      <Input
-                        value={salaResponsavel}
-                        onChange={(e) => setSalaResponsavel(e.target.value)}
-                        placeholder="Ex: Sala dos professores, Secretaria, Refeitorio"
-                        className="h-11 text-sm border-[#e2e8f0] bg-white placeholder:text-[#94a3b8]"
-                      />
                     </div>
                   </div>
 
@@ -480,7 +469,8 @@ export default function InventarioPage() {
                             <th className="px-3 py-3 text-left font-medium text-[#475569] w-24">Marca/Modelo</th>
                             <th className="px-3 py-3 text-left font-medium text-[#475569] w-20">N Serie</th>
                             <th className="px-3 py-3 text-left font-medium text-[#475569] w-16">Medidas</th>
-                            <th className="px-3 py-3 text-left font-medium text-[#475569] w-24">Observacao</th>
+                            <th className="px-3 py-3 text-left font-medium text-[#475569] w-20">Obs.</th>
+                            <th className="px-3 py-3 text-left font-medium text-[#475569] w-28">Sala Resp.</th>
                             <th className="px-3 py-3 w-10"></th>
                           </tr>
                         </thead>
@@ -504,6 +494,9 @@ export default function InventarioPage() {
                               </td>
                               <td className="px-2 py-2">
                                 <Input value={item.observacao} onChange={(e) => atualizarItemInventario(item.id, "observacao", e.target.value)} className="h-9 text-sm border-[#e2e8f0] px-2" />
+                              </td>
+                              <td className="px-2 py-2">
+                                <Input value={item.setor} onChange={(e) => atualizarItemInventario(item.id, "setor", e.target.value)} placeholder="Ex: Secretaria" className="h-9 text-sm border-[#e2e8f0] px-2" />
                               </td>
                               <td className="px-2 py-2 text-center">
                                 <button onClick={() => removerItemInventario(item.id)} className="p-1.5 text-[#94a3b8] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" disabled={itensInventario.length === 1}>

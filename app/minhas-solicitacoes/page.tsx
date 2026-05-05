@@ -184,7 +184,7 @@ export default function MinhasSolicitacoesPage() {
           <ArrowLeft className="w-4 h-4" /> Voltar
         </Link>
 
-          <div className="mb-5 bg-white rounded-2xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden animate-fade-in-up animation-delay-100 hover-lift">
+          <div className="mb-5 bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden">
           <div className="px-5 pt-4 pb-1">
             <h2 className="text-sm font-bold text-[#1e293b]">Dados do Solicitante</h2>
           </div>
@@ -226,7 +226,7 @@ export default function MinhasSolicitacoesPage() {
         </div>
 
         {/* Abas de tipo de busca */}
-        <div className="mb-5 bg-white rounded-2xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
+        <div className="mb-5 bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden">
           <div className="px-5 py-3 bg-[#f8fafc] border-b border-[#e2e8f0] flex items-center justify-between">
             <p className="text-sm font-semibold text-[#1e293b]">Tipo de consulta</p>
           </div>
@@ -258,7 +258,7 @@ export default function MinhasSolicitacoesPage() {
 
         {/* Busca Individual */}
         {tipoBusca === "individual" && (
-          <div className="mb-5 bg-white rounded-2xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
+          <div className="mb-5 bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden">
             <div className="px-5 pt-4 pb-1">
               <h2 className="text-sm font-bold text-[#1e293b]">Buscar Solicitacao Individual</h2>
               <p className="text-xs text-[#64748b] mt-1">Busque uma solicitacao especifica pelo numero de pedido.</p>
@@ -307,7 +307,7 @@ export default function MinhasSolicitacoesPage() {
 
         {/* Buscar Minhas Solicitacoes */}
         {tipoBusca === "minhas" && (
-          <div className="mb-5 bg-white rounded-2xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
+          <div className="mb-5 bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden">
             <div className="px-5 pt-4 pb-1">
               <h2 className="text-sm font-bold text-[#1e293b]">Buscar Minhas Solicitacoes</h2>
               <p className="text-xs text-[#64748b] mt-1">Veja todas as solicitacoes da sua instituicao.</p>

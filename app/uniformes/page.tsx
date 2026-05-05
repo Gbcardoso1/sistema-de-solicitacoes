@@ -16,6 +16,7 @@ const generos = ["Masculino", "Feminino"];
 
 interface UniformeItem { id: number; tipo: string; genero: string; tamanho: string; quantidade: number }
 interface CalcadoItem { id: number; tamanho: string; quantidade: number }
+interface PoloItem { id: number; tamanho: string; quantidade: number }
 
 export default function UniformesPage() {
   const router = useRouter();
@@ -24,12 +25,14 @@ export default function UniformesPage() {
   const [instituicao, setInstituicao] = useState("");
   const [uniformes, setUniformes] = useState<UniformeItem[]>([{ id: 1, tipo: "", genero: "", tamanho: "", quantidade: 0 }]);
   const [calcados, setCalcados] = useState<CalcadoItem[]>([{ id: 1, tamanho: "", quantidade: 0 }]);
+  const [polos, setPolos] = useState<PoloItem[]>([{ id: 1, tamanho: "", quantidade: 0 }]);
   const [modalAberto, setModalAberto] = useState(false);
   const [pdfBaixado, setPdfBaixado] = useState(false);
 
   const tiposUniforme = getNomesAtivos("uniforme");
   const tamanhosRoupas = getNomesAtivos("tamanhosRoupas");
   const tamanhosCalcados = getNomesAtivos("calcado");
+  const tamanhosPolo = getNomesAtivos("tamanhosPolo");
 
   const addUniforme = () => setUniformes([...uniformes, { id: Date.now(), tipo: "", genero: "", tamanho: "", quantidade: 0 }]);
   const removeUniforme = (id: number) => { if (uniformes.length > 1) setUniformes(uniformes.filter((u) => u.id !== id)); };
@@ -49,21 +52,32 @@ export default function UniformesPage() {
     setCalcados(calcados.map(c => c.id === id ? { ...c, quantidade: Math.max(0, c.quantidade - 1) } : c));
   };
 
+  const addPolo = () => setPolos([...polos, { id: Date.now(), tamanho: "", quantidade: 0 }]);
+  const removePolo = (id: number) => { if (polos.length > 1) setPolos(polos.filter((p) => p.id !== id)); };
+  const incrementPoloQuantidade = (id: number) => {
+    setPolos(polos.map(p => p.id === id ? { ...p, quantidade: p.quantidade + 1 } : p));
+  };
+  const decrementPoloQuantidade = (id: number) => {
+    setPolos(polos.map(p => p.id === id ? { ...p, quantidade: Math.max(0, p.quantidade - 1) } : p));
+  };
+
   const uniformesFiltrados = uniformes.filter(u => u.quantidade > 0);
   const calcadosFiltrados = calcados.filter(c => c.quantidade > 0);
+  const polosFiltrados = polos.filter(p => p.tamanho && p.quantidade > 0);
 
   const getDadosComprovante = () => {
     const dataHora = new Date().toLocaleString("pt-BR");
     const itensComprovante = [
       ...uniformesFiltrados.map(u => ({ descricao: `Uniforme ${u.tipo} - ${u.genero} - Tam: ${u.tamanho}`, quantidade: u.quantidade })),
       ...calcadosFiltrados.map(c => ({ descricao: `Calcado - Tam: ${c.tamanho}`, quantidade: c.quantidade })),
+      ...polosFiltrados.map(p => ({ descricao: `Polo Professor - Tam: ${p.tamanho}`, quantidade: p.quantidade })),
     ];
     return { tipo: "uniformes", nome, matricula, instituicao, dataHora, itens: itensComprovante };
   };
 
   const handleFinalizar = () => {
     if (!nome || !matricula || !instituicao) { alert("Preencha todos os dados do solicitante"); return; }
-    if (uniformesFiltrados.length === 0 && calcadosFiltrados.length === 0) { alert("Adicione pelo menos um item com quantidade maior que zero"); return; }
+    if (uniformesFiltrados.length === 0 && calcadosFiltrados.length === 0 && polosFiltrados.length === 0) { alert("Adicione pelo menos um item com quantidade maior que zero"); return; }
     setModalAberto(true);
     setPdfBaixado(false);
   };
@@ -73,11 +87,13 @@ export default function UniformesPage() {
   const handleConfirmarEnvio = () => {
     addSolicitacao({
       tipo: "uniformes", nome, matricula, instituicao,
-      dados: { uniformes, calcados },
+      dados: { uniformes, calcados, polos },
       uniformes: uniformes.reduce((a, u) => a + u.quantidade, 0),
       calcados: calcados.reduce((a, c) => a + c.quantidade, 0),
+      polosProf: polos.reduce((a, p) => a + p.quantidade, 0),
       uniformesDetalhes: uniformesFiltrados.map(u => ({ tipo: u.tipo, genero: u.genero, tamanho: u.tamanho, quantidade: u.quantidade })),
       calcadosDetalhes: calcadosFiltrados.map(c => ({ tamanho: c.tamanho, quantidade: c.quantidade })),
+      polosProfDetalhes: polosFiltrados.map(p => ({ tipo: "Polo Professor", tamanho: p.tamanho, quantidade: p.quantidade })),
     });
     setModalAberto(false);
     alert("Solicitacao enviada com sucesso!");
@@ -272,6 +288,73 @@ export default function UniformesPage() {
           </div>
         </div>
 
+        {/* Polo Professor */}
+        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
+          <div className="px-6 py-4">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#3b82f6]" />
+                <h2 className="text-base font-semibold text-[#1e293b]">Polo Professor</h2>
+              </div>
+              <Button variant="outline" size="sm" onClick={addPolo} className="h-9 text-sm border-[#3b82f6] text-[#3b82f6] bg-white hover:bg-[#eff6ff] font-medium">
+                <Plus className="w-4 h-4 mr-1.5" /> Adicionar
+              </Button>
+            </div>
+            <div className="space-y-4">
+              {polos.map((polo, index) => (
+                <div key={polo.id}>
+                  <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-4 items-end">
+                    <div className="space-y-2">
+                      <label className="block text-sm text-[#475569]">Tamanho da Polo</label>
+                      <Select value={polo.tamanho} onValueChange={(v) => { const p = [...polos]; p[index].tamanho = v; setPolos(p); }}>
+                        <SelectTrigger className="h-11 text-sm border-[#e2e8f0] bg-white"><SelectValue placeholder="Selecione o tamanho" /></SelectTrigger>
+                        <SelectContent>{tamanhosPolo.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-sm text-[#475569]">Quantidade</label>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => decrementPoloQuantidade(polo.id)}
+                          className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </Button>
+                        <Input type="number" min="0" value={polo.quantidade} onChange={(e) => { const p = [...polos]; p[index].quantidade = parseInt(e.target.value) || 0; setPolos(p); }} className="h-11 w-16 text-sm text-center border-[#e2e8f0] bg-white" />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => incrementPoloQuantidade(polo.id)}
+                          className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    {polos.length > 1 && (
+                      <div className="pb-0.5">
+                        <Button variant="outline" size="icon" onClick={() => removePolo(polo.id)} className="h-11 w-11 border-[#e2e8f0] text-[#94a3b8] hover:text-red-500 hover:border-red-200 hover:bg-red-50">
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  {index < polos.length - 1 && <div className="border-t border-[#f1f5f9] mt-4" />}
+                </div>
+              ))}
+            </div>
+            <div className="mt-4">
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-[#f1f5f9] text-sm text-[#64748b]">
+                {polosFiltrados.length} {polosFiltrados.length === 1 ? "item adicionado" : "itens adicionados"}
+              </span>
+            </div>
+          </div>
+        </div>
+
         <div className="flex justify-center mt-8">
           <Button onClick={handleFinalizar} className="px-14 h-11 bg-[#111c44] hover:bg-[#0e1735] text-white font-semibold rounded-xl text-sm tracking-wide shadow-lg hover:shadow-xl transition-all duration-300">Finalizar Solicitacao</Button>
         </div>
@@ -314,6 +397,19 @@ export default function UniformesPage() {
                   <h3 className="text-sm font-bold text-[#1e293b] mb-2">Calcados (Tenis)</h3>
                   <div className="space-y-1.5">
                     {calcadosFiltrados.map((item, i) => (
+                      <div key={item.id} className="bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-3 py-2 text-sm text-[#374151]">
+                        <p className="font-medium">Item {i + 1}</p>
+                        <p>Tamanho: {item.tamanho} | Quantidade: {item.quantidade}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {polosFiltrados.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-bold text-[#1e293b] mb-2">Polo Professor</h3>
+                  <div className="space-y-1.5">
+                    {polosFiltrados.map((item, i) => (
                       <div key={item.id} className="bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-3 py-2 text-sm text-[#374151]">
                         <p className="font-medium">Item {i + 1}</p>
                         <p>Tamanho: {item.tamanho} | Quantidade: {item.quantidade}</p>

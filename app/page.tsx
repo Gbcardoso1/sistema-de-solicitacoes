@@ -22,40 +22,7 @@ import {
   Bluetooth,
 } from "lucide-react";
 
-// Adicionar estilos de animação
-const animationStyles = `
-  @keyframes slideInRight {
-    from {
-      opacity: 0;
-      transform: translateX(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
 
-  @keyframes pulse-scale {
-    0%, 100% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.05);
-    }
-  }
-
-  .menu-item {
-    animation: slideInRight 0.5s ease-out forwards;
-  }
-
-  .menu-item:nth-child(2) { animation-delay: 0.1s; }
-  .menu-item:nth-child(3) { animation-delay: 0.2s; }
-  .menu-item:nth-child(4) { animation-delay: 0.3s; }
-  .menu-item:nth-child(5) { animation-delay: 0.4s; }
-  .menu-item:nth-child(6) { animation-delay: 0.5s; }
-  .menu-item:nth-child(7) { animation-delay: 0.6s; }
-  .menu-item:nth-child(8) { animation-delay: 0.7s; }
-`;
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -175,7 +142,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#1a1a4e]">
-      <style>{animationStyles}</style>
       {/* Header - Dark Navy */}
       <header className="relative bg-[#1a1a4e] py-7 lg:py-10">
         {/* Login button top-left */}
@@ -230,7 +196,7 @@ export default function HomePage() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="menu-item group bg-white border border-gray-200 rounded-lg p-4 hover:shadow-xl hover:border-[#0fb992] hover:-translate-y-1 transition-all duration-300 ease-out active:scale-[0.98] flex items-center gap-4"
+                  className="group bg-white border border-gray-200 rounded-lg p-4 hover:shadow-xl hover:border-[#0fb992] hover:-translate-y-1 transition-all duration-300 ease-out active:scale-[0.98] flex items-center gap-4"
                 >
                   <div className="w-14 h-14 rounded-lg bg-[#0fb992] flex items-center justify-center shrink-0 group-hover:bg-[#0da881] group-hover:shadow-lg group-hover:shadow-[#0fb992]/40 transition-all duration-300">
                     <item.icon className="w-7 h-7 text-white group-hover:scale-110 transition-transform duration-300" strokeWidth={1.5} />
@@ -254,7 +220,7 @@ export default function HomePage() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="menu-item group bg-white border border-gray-200 rounded-lg p-4 hover:shadow-xl hover:border-[#0fb992] hover:-translate-y-1 transition-all duration-300 ease-out active:scale-[0.98] flex items-center gap-4"
+                  className="group bg-white border border-gray-200 rounded-lg p-4 hover:shadow-xl hover:border-[#0fb992] hover:-translate-y-1 transition-all duration-300 ease-out active:scale-[0.98] flex items-center gap-4"
                 >
                   <div className="w-14 h-14 rounded-lg bg-[#0fb992] flex items-center justify-center shrink-0 group-hover:bg-[#0da881] group-hover:shadow-lg group-hover:shadow-[#0fb992]/40 transition-all duration-300">
                     <item.icon className="w-7 h-7 text-white group-hover:scale-110 transition-transform duration-300" strokeWidth={1.5} />
