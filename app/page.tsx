@@ -175,19 +175,19 @@ export default function HomePage() {
         className="flex-1 relative bg-[#f5f5eb] border-t-4 border-[#f5e60f] mt-0"
         style={{
           marginTop: "10px",
-          borderTopLeftRadius: "20px",
-          borderTopRightRadius: "20px",
+          borderTopLeftRadius: "25px",
+          borderTopRightRadius: "25px",
         }}
       >
         <div className="container mx-auto px-4 py-5 lg:py-6">
           <div className="max-w-6xl mx-auto">
             {/* Welcome Section */}
-            <div className="mb-20 lg:mb-8 text-left">
-              <div className="flex items-left justify-left gap-3 mb-5">
-                <div className="w-1 h-5 bg-[#0fb992] rounded-full"></div>
+            <div className="mb-20 lg:mb-10 text-left">
+              <div className="flex items-left justify-left gap-2 mb-2">
+                <div className="w-1 h-7 bg-[#0fb992] rounded-full"></div>
                 <h1 className="text-3xl lg:text-2xl font-bold text-[#1a1a4e]">Bem-vindo!</h1>
               </div>
-              <p className="text-gray-600 text-[11px] lg:text-xs">Escolha uma das opções abaixo para iniciar sua solicitação.</p>
+              <p className="text-gray-600 text-[11px] lg:text-xs ">Escolha uma das opções abaixo para iniciar sua solicitação.</p>
             </div>
 
             {/* Menu Grid */}
@@ -249,9 +249,9 @@ export default function HomePage() {
             {/* Chat Online button */}
             <button
               onClick={openChat}
-              className="fixed bottom-6 right-6 w-14 h-14 bg-[#1a1a4e] hover:bg-[#261da0] text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 z-50 group"
+              className="fixed bottom-6 right-6 w-14 h-14 bg-[#0fb992] hover:bg-[#261da0] text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 z-50 group"
             >
-              <div className="w-10 h-10 rounded-md bg-white/20 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-md  flex items-center justify-center shrink-0">
                 <MessageCircle className="w-6 h-6 text-white transition-transform duration-300 group-hover:scale-110" strokeWidth={1.5} />
               </div>
             </button>
