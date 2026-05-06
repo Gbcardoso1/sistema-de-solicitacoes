@@ -1821,9 +1821,22 @@ export default function AdminPage() {
     const pw = doc.internal.pageSize.getWidth();
     const m = 15;
     const cw = pw - m * 2;
-    let y = 0;
+    let y = 8;
 
-    // --- Logo Header ---
+    // --- Header with text on left, logo on right ---
+    // Left side text
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(51, 77, 77);
+    doc.text("Estado do Rio de Janeiro", m, y + 5);
+    doc.setFont("helvetica", "bold");
+    doc.text("Prefeitura Municipal de Saquarema", m, y + 10);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text("Secretaria Municipal de Educacao, Cultura,", m, y + 15);
+    doc.text("Inclusao, Ciencia e Tecnologia", m, y + 19);
+
+    // Logo on right side
     try {
       const logoImg = new Image();
       logoImg.crossOrigin = "anonymous";
@@ -1833,22 +1846,48 @@ export default function AdminPage() {
         logoImg.src = "/images/logo-prefeitura-saquarema.png";
       });
       
-      const logoWidth = 100;
-      const logoHeight = 25;
-      const logoX = (pw - logoWidth) / 2;
-      doc.addImage(logoImg, "PNG", logoX, 8, logoWidth, logoHeight);
-      y = 40;
+      const logoWidth = 50;
+      const logoHeight = 18;
+      const logoX = pw - m - logoWidth;
+      doc.addImage(logoImg, "PNG", logoX, y, logoWidth, logoHeight);
     } catch {
-      y = 8;
+      // Logo failed to load, continue without it
     }
 
-    doc.setFillColor(17, 28, 68);
-    doc.rect(0, y, pw, 28, "F");
+    y = y + 24;
+
+    // Colored stripe (green, yellow, blue)
+    doc.setFillColor(0, 100, 60); // Green
+    doc.rect(0, y, pw * 0.6, 3, "F");
+    doc.setFillColor(255, 204, 0); // Yellow
+    doc.rect(pw * 0.6, y, pw * 0.15, 3, "F");
+    doc.setFillColor(0, 56, 168); // Blue
+    doc.rect(pw * 0.75, y, pw * 0.25, 3, "F");
+    y += 8;
+
+    // Declaration title and text
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Declaracao de Responsabilidade por Material Permanente", pw / 2, y, { align: "center" });
+    y += 6;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(60, 60, 60);
+    const declarationText = "Declaro, para os devidos fins, que recebi o material permanente relacionado abaixo, o qual sera utilizado exclusivamente para fins de servico nesta unidade de ensino, sob minha responsabilidade. Comprometo-me a zelar pela sua adequada conservacao e a devolve-lo ao patrimonio publico em perfeitas condicoes, ressalvadas as deterioracoes naturais decorrentes do uso regular, assim que o referido material deixar de ser necessario para o desempenho das atividades da unidade.";
+    const splitDeclaration = doc.splitTextToSize(declarationText, cw);
+    doc.text(splitDeclaration, m, y);
+    y += splitDeclaration.length * 4 + 6;
+
+    // Blue header bar for request type
+    doc.setFillColor(17, 28, 68);
+    doc.rect(0, y, pw, 20, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
     doc.setTextColor(255, 255, 255);
-    doc.text("SOLICITACAO - " + solicitacao.tipo.toUpperCase(), pw / 2, y + 17, { align: "center" });
-    y = y + 38;
+    doc.text("SOLICITACAO - " + solicitacao.tipo.toUpperCase(), pw / 2, y + 12, { align: "center" });
+    y = y + 28;
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
