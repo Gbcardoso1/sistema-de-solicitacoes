@@ -82,7 +82,7 @@ export default function KitsPage() {
     setPdfBaixado(false);
   };
 
-  const handleBaixarPDF = async () => { await gerarComprovantePDF(getDadosComprovante()); setPdfBaixado(true); };
+  const handleBaixarPDF = () => { gerarComprovantePDF(getDadosComprovante()); setPdfBaixado(true); };
 
   const handleConfirmarEnvio = () => {
     addSolicitacao({

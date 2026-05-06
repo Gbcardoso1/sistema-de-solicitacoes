@@ -72,8 +72,8 @@ export default function AlmoxarifadoPage() {
     setPdfBaixado(false);
   };
 
-  const handleBaixarPDF = async () => {
-    await gerarComprovantePDF(getDadosComprovante(numeroSolicitacao));
+  const handleBaixarPDF = () => {
+    gerarComprovantePDF(getDadosComprovante(numeroSolicitacao));
     setPdfBaixado(true);
   };
 
