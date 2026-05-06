@@ -3515,54 +3515,127 @@ const getSidebarDescription = () => {
                 <div className="space-y-4">
                   {/* Header */}
                   <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden shadow-sm">
-                    <div className="px-5 py-3.5 border-b border-[#e5e5e5] flex items-center justify-between">
-                      <div>
+                    {/* Filters */}
+                    <div className="px-5 py-3.5 border-b border-[#e5e5e5] flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
                         <span className="text-sm font-semibold text-[#1a1a1a]">
-                          Relatorio de Transferencias ({solicitacoes.filter(s => s.tipo === "transferencia").length} registros)
+                          Relatorio de Transferencias ({(() => {
+                            const transferencias = solicitacoes.filter(s => s.tipo === "transferencia");
+                            const filtered = transferencias.filter((t) => {
+                              const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || (t.unidadeOrigem || t.dados?.unidadeOrigem || t.instituicao || "") === instituicaoFiltro;
+                              const matchAno = anoFiltro === "Todos os Anos" || t.dataHora.includes(anoFiltro);
+                              const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                                const mesNum = mesNumero[mesFiltro];
+                                const parts = t.dataHora.split("/");
+                                return parts.length >= 2 && parts[1] === mesNum;
+                              })();
+                              const matchStatus = statusFiltro === "Todos os Status" || (t.status || "Pendente") === statusFiltro;
+                              return matchInstituicao && matchAno && matchMes && matchStatus;
+                            });
+                            return filtered.length;
+                          })()} registros)
                         </span>
-                        <p className="text-xs text-[#8c8c8c] mt-0.5">Todas as transferencias de itens entre unidades</p>
                       </div>
-                      <button
-                        onClick={() => {
-                          const transferencias = solicitacoes.filter(s => s.tipo === "transferencia");
-                          const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-                          const pw = doc.internal.pageSize.getWidth();
-                          doc.setFontSize(14);
-                          doc.setFont("helvetica", "bold");
-                          doc.text("RELATORIO DE TRANSFERENCIAS", pw / 2, 15, { align: "center" });
-                          doc.setFontSize(9);
-                          doc.setFont("helvetica", "normal");
-                          doc.text(`Gerado em: ${new Date().toLocaleString("pt-BR")} | Total: ${transferencias.length} transferencias`, pw / 2, 22, { align: "center" });
-                          let y = 35;
-                          doc.setFontSize(8);
-                          doc.setFillColor(240, 240, 240);
-                          doc.rect(10, y - 4, pw - 20, 7, "F");
-                          doc.setFont("helvetica", "bold");
-                          doc.text("Data", 12, y);
-                          doc.text("Origem", 40, y);
-                          doc.text("Destino", 100, y);
-                          doc.text("Responsavel Origem", 160, y);
-                          doc.text("Situacao", 220, y);
-                          doc.text("Condicao", 250, y);
-                          y += 8;
-                          doc.setFont("helvetica", "normal");
-                          transferencias.forEach((t) => {
-                            if (y > 190) { doc.addPage(); y = 20; }
-                            doc.text(t.dataHora.split(",")[0] || "-", 12, y);
-                            doc.text((t.unidadeOrigem || t.dados?.unidadeOrigem || t.instituicao || "-").substring(0, 35), 40, y);
-                            doc.text((t.unidadeDestino || t.dados?.unidadeDestino || "-").substring(0, 35), 100, y);
-                            doc.text((t.dados?.responsavelOrigem || t.nome || "-").substring(0, 30), 160, y);
-                            doc.text(t.situacao || t.dados?.situacao || "-", 220, y);
-                            doc.text(t.condicao || t.dados?.condicao || "-", 250, y);
-                            y += 6;
-                          });
-                          doc.save("relatorio_transferencias.pdf");
-                        }}
-                        className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-[#111c44] hover:bg-[#0e1735] rounded-lg transition-colors shadow-sm"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                        Baixar PDF
-                      </button>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Select value={instituicaoFiltro} onValueChange={setInstituicaoFiltro}>
+                          <SelectTrigger className="w-48 h-8 text-xs border-[#e5e5e5] bg-white text-[#5a5a5a]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {instituicoes.map((inst) => (
+                              <SelectItem key={inst} value={inst}>{inst}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select value={mesFiltro} onValueChange={setMesFiltro}>
+                          <SelectTrigger className="w-40 h-8 text-xs border-[#e5e5e5] bg-white text-[#5a5a5a]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {meses.map((m) => (
+                              <SelectItem key={m} value={m}>{m}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select value={anoFiltro} onValueChange={setAnoFiltro}>
+                          <SelectTrigger className="w-36 h-8 text-xs border-[#e5e5e5] bg-white text-[#5a5a5a]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {anos.map((a) => (
+                              <SelectItem key={a} value={a}>{a}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select value={statusFiltro} onValueChange={setStatusFiltro}>
+                          <SelectTrigger className="w-40 h-8 text-xs border-[#e5e5e5] bg-white text-[#5a5a5a]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Todos os Status">Todos os Status</SelectItem>
+                            <SelectItem value="Pendente">Pendente</SelectItem>
+                            <SelectItem value="Processamento">Processamento</SelectItem>
+                            <SelectItem value="Finalizado">Finalizado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <button
+                          onClick={clearFilters}
+                          className="px-3 py-1.5 text-xs font-medium text-[#5a5a5a] border border-[#e5e5e5] rounded-lg hover:bg-[#f9f9f9] transition-colors"
+                        >
+                          Limpar
+                        </button>
+                        <button
+                          onClick={() => {
+                            const transferencias = solicitacoes.filter(s => s.tipo === "transferencia").filter((t) => {
+                              const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || (t.unidadeOrigem || t.dados?.unidadeOrigem || t.instituicao || "") === instituicaoFiltro;
+                              const matchAno = anoFiltro === "Todos os Anos" || t.dataHora.includes(anoFiltro);
+                              const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                                const mesNum = mesNumero[mesFiltro];
+                                const parts = t.dataHora.split("/");
+                                return parts.length >= 2 && parts[1] === mesNum;
+                              })();
+                              const matchStatus = statusFiltro === "Todos os Status" || (t.status || "Pendente") === statusFiltro;
+                              return matchInstituicao && matchAno && matchMes && matchStatus;
+                            });
+                            const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+                            const pw = doc.internal.pageSize.getWidth();
+                            doc.setFontSize(14);
+                            doc.setFont("helvetica", "bold");
+                            doc.text("RELATORIO DE TRANSFERENCIAS", pw / 2, 15, { align: "center" });
+                            doc.setFontSize(9);
+                            doc.setFont("helvetica", "normal");
+                            doc.text(`Gerado em: ${new Date().toLocaleString("pt-BR")} | Total: ${transferencias.length} transferencias`, pw / 2, 22, { align: "center" });
+                            let y = 35;
+                            doc.setFontSize(8);
+                            doc.setFillColor(240, 240, 240);
+                            doc.rect(10, y - 4, pw - 20, 7, "F");
+                            doc.setFont("helvetica", "bold");
+                            doc.text("Data", 12, y);
+                            doc.text("Origem", 40, y);
+                            doc.text("Destino", 100, y);
+                            doc.text("Responsavel Origem", 160, y);
+                            doc.text("Situacao", 220, y);
+                            doc.text("Condicao", 250, y);
+                            y += 8;
+                            doc.setFont("helvetica", "normal");
+                            transferencias.forEach((t) => {
+                              if (y > 190) { doc.addPage(); y = 20; }
+                              doc.text(t.dataHora.split(",")[0] || "-", 12, y);
+                              doc.text((t.unidadeOrigem || t.dados?.unidadeOrigem || t.instituicao || "-").substring(0, 35), 40, y);
+                              doc.text((t.unidadeDestino || t.dados?.unidadeDestino || "-").substring(0, 35), 100, y);
+                              doc.text((t.dados?.responsavelOrigem || t.nome || "-").substring(0, 30), 160, y);
+                              doc.text(t.situacao || t.dados?.situacao || "-", 220, y);
+                              doc.text(t.condicao || t.dados?.condicao || "-", 250, y);
+                              y += 6;
+                            });
+                            doc.save("relatorio_transferencias.pdf");
+                          }}
+                          className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-[#111c44] hover:bg-[#0e1735] rounded-lg transition-colors shadow-sm"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          Baixar Relatorio Completo (PDF)
+                        </button>
+                      </div>
                     </div>
 
                     {/* Tabela */}
@@ -3582,7 +3655,17 @@ const getSidebarDescription = () => {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-[#e5e5e5]">
-                          {solicitacoes.filter(s => s.tipo === "transferencia").map((t) => (
+                          {solicitacoes.filter(s => s.tipo === "transferencia").filter((t) => {
+                            const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || (t.unidadeOrigem || t.dados?.unidadeOrigem || t.instituicao || "") === instituicaoFiltro;
+                            const matchAno = anoFiltro === "Todos os Anos" || t.dataHora.includes(anoFiltro);
+                            const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                              const mesNum = mesNumero[mesFiltro];
+                              const parts = t.dataHora.split("/");
+                              return parts.length >= 2 && parts[1] === mesNum;
+                            })();
+                            const matchStatus = statusFiltro === "Todos os Status" || (t.status || "Pendente") === statusFiltro;
+                            return matchInstituicao && matchAno && matchMes && matchStatus;
+                          }).map((t) => (
                             <tr key={t.id} className="hover:bg-[#fafafa]">
                               <td className="px-4 py-3 text-[#666]">{t.dataHora.split(",")[0]}</td>
                               <td className="px-4 py-3 font-medium text-[#1a1a1a]">{(t.unidadeOrigem || t.dados?.unidadeOrigem || t.instituicao || "-").substring(0, 30)}</td>
@@ -3595,7 +3678,17 @@ const getSidebarDescription = () => {
                               <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded text-xs ${t.status === "Finalizado" ? "bg-green-100 text-green-700" : t.status === "Processamento" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700"}`}>{t.status || "Pendente"}</span></td>
                             </tr>
                           ))}
-                          {solicitacoes.filter(s => s.tipo === "transferencia").length === 0 && (
+                          {solicitacoes.filter(s => s.tipo === "transferencia").filter((t) => {
+                            const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || (t.unidadeOrigem || t.dados?.unidadeOrigem || t.instituicao || "") === instituicaoFiltro;
+                            const matchAno = anoFiltro === "Todos os Anos" || t.dataHora.includes(anoFiltro);
+                            const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                              const mesNum = mesNumero[mesFiltro];
+                              const parts = t.dataHora.split("/");
+                              return parts.length >= 2 && parts[1] === mesNum;
+                            })();
+                            const matchStatus = statusFiltro === "Todos os Status" || (t.status || "Pendente") === statusFiltro;
+                            return matchInstituicao && matchAno && matchMes && matchStatus;
+                          }).length === 0 && (
                             <tr><td colSpan={9} className="px-6 py-12 text-center text-[#aaa]">Nenhuma transferencia registrada.</td></tr>
                           )}
                         </tbody>
@@ -3607,35 +3700,237 @@ const getSidebarDescription = () => {
 
               {relatorioAbaAtiva === "inventarios" && (
                 <div className="space-y-4">
+                  {/* Filter bar */}
+                  <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden shadow-sm">
+                    <div className="px-5 py-3.5 border-b border-[#e5e5e5] flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-[#1a1a1a]">
+                          Relatorio de Inventarios ({(() => {
+                            const filterFunc = (inv: { dataHora: string; escola?: string; denominacao?: string; status?: string }) => {
+                              const escola = inv.escola || inv.denominacao || "";
+                              const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || escola === instituicaoFiltro;
+                              const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                              const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                                const mesNum = mesNumero[mesFiltro];
+                                const parts = inv.dataHora.split("/");
+                                return parts.length >= 2 && parts[1] === mesNum;
+                              })();
+                              const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                              return matchInstituicao && matchAno && matchMes && matchStatus;
+                            };
+                            return inventarios.filter(filterFunc).length + inventariosSetor.filter(filterFunc).length;
+                          })()} registros)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Select value={instituicaoFiltro} onValueChange={setInstituicaoFiltro}>
+                          <SelectTrigger className="w-48 h-8 text-xs border-[#e5e5e5] bg-white text-[#5a5a5a]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {instituicoes.map((inst) => (
+                              <SelectItem key={inst} value={inst}>{inst}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select value={mesFiltro} onValueChange={setMesFiltro}>
+                          <SelectTrigger className="w-40 h-8 text-xs border-[#e5e5e5] bg-white text-[#5a5a5a]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {meses.map((m) => (
+                              <SelectItem key={m} value={m}>{m}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select value={anoFiltro} onValueChange={setAnoFiltro}>
+                          <SelectTrigger className="w-36 h-8 text-xs border-[#e5e5e5] bg-white text-[#5a5a5a]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {anos.map((a) => (
+                              <SelectItem key={a} value={a}>{a}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select value={statusFiltro} onValueChange={setStatusFiltro}>
+                          <SelectTrigger className="w-40 h-8 text-xs border-[#e5e5e5] bg-white text-[#5a5a5a]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Todos os Status">Todos os Status</SelectItem>
+                            <SelectItem value="Pendente">Pendente</SelectItem>
+                            <SelectItem value="Em Analise">Em Analise</SelectItem>
+                            <SelectItem value="Finalizado">Finalizado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <button
+                          onClick={clearFilters}
+                          className="px-3 py-1.5 text-xs font-medium text-[#5a5a5a] border border-[#e5e5e5] rounded-lg hover:bg-[#f9f9f9] transition-colors"
+                        >
+                          Limpar
+                        </button>
+                        <button
+                          onClick={() => {
+                            const filterFunc = (inv: { dataHora: string; escola?: string; denominacao?: string; status?: string }) => {
+                              const escola = inv.escola || inv.denominacao || "";
+                              const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || escola === instituicaoFiltro;
+                              const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                              const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                                const mesNum = mesNumero[mesFiltro];
+                                const parts = inv.dataHora.split("/");
+                                return parts.length >= 2 && parts[1] === mesNum;
+                              })();
+                              const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                              return matchInstituicao && matchAno && matchMes && matchStatus;
+                            };
+                            const filteredInventarios = inventarios.filter(filterFunc);
+                            const filteredInventariosSetor = inventariosSetor.filter(filterFunc);
+                            const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+                            const pw = doc.internal.pageSize.getWidth();
+                            doc.setFontSize(14);
+                            doc.setFont("helvetica", "bold");
+                            doc.text("RELATORIO DE INVENTARIOS", pw / 2, 15, { align: "center" });
+                            doc.setFontSize(9);
+                            doc.setFont("helvetica", "normal");
+                            doc.text(`Gerado em: ${new Date().toLocaleString("pt-BR")} | Total: ${filteredInventarios.length + filteredInventariosSetor.length} inventarios`, pw / 2, 22, { align: "center" });
+                            let y = 35;
+                            doc.setFontSize(8);
+                            // Inventarios Gerais
+                            if (filteredInventarios.length > 0) {
+                              doc.setFont("helvetica", "bold");
+                              doc.text("INVENTARIOS GERAIS", 12, y);
+                              y += 6;
+                              doc.setFillColor(240, 240, 240);
+                              doc.rect(10, y - 4, pw - 20, 7, "F");
+                              doc.text("Data", 12, y);
+                              doc.text("Escola", 40, y);
+                              doc.text("Solicitante", 120, y);
+                              doc.text("Ano", 180, y);
+                              doc.text("Itens", 210, y);
+                              doc.text("Status", 240, y);
+                              y += 8;
+                              doc.setFont("helvetica", "normal");
+                              filteredInventarios.forEach((inv) => {
+                                if (y > 190) { doc.addPage(); y = 20; }
+                                doc.text(inv.dataHora.split(",")[0] || "-", 12, y);
+                                doc.text((inv.escola || "-").substring(0, 45), 40, y);
+                                doc.text((inv.solicitante || "-").substring(0, 30), 120, y);
+                                doc.text(inv.ano || "-", 180, y);
+                                doc.text(String(inv.itens?.length || 0), 210, y);
+                                doc.text(inv.status || "Pendente", 240, y);
+                                y += 6;
+                              });
+                              y += 10;
+                            }
+                            // Inventarios por Setor
+                            if (filteredInventariosSetor.length > 0) {
+                              if (y > 170) { doc.addPage(); y = 20; }
+                              doc.setFont("helvetica", "bold");
+                              doc.text("INVENTARIOS POR SETOR", 12, y);
+                              y += 6;
+                              doc.setFillColor(240, 240, 240);
+                              doc.rect(10, y - 4, pw - 20, 7, "F");
+                              doc.text("Data", 12, y);
+                              doc.text("Instituicao", 40, y);
+                              doc.text("Sala", 120, y);
+                              doc.text("Responsavel", 170, y);
+                              doc.text("Itens", 230, y);
+                              doc.text("Status", 255, y);
+                              y += 8;
+                              doc.setFont("helvetica", "normal");
+                              filteredInventariosSetor.forEach((inv) => {
+                                if (y > 190) { doc.addPage(); y = 20; }
+                                doc.text(inv.dataHora.split(",")[0] || "-", 12, y);
+                                doc.text((inv.denominacao || "-").substring(0, 45), 40, y);
+                                doc.text((inv.salaResponsavel || "-").substring(0, 25), 120, y);
+                                doc.text((inv.respNome || "-").substring(0, 30), 170, y);
+                                doc.text(String(inv.itens?.length || 0), 230, y);
+                                doc.text(inv.status || "Pendente", 255, y);
+                                y += 6;
+                              });
+                            }
+                            doc.save("relatorio_inventarios_completo.pdf");
+                          }}
+                          className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-[#111c44] hover:bg-[#0e1735] rounded-lg transition-colors shadow-sm"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          Baixar Relatorio Completo (PDF)
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Summary */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 shadow-sm">
-                      <p className="text-xs text-[#8c8c8c] font-medium uppercase tracking-wide">Total Inventarios</p>
-                      <p className="text-2xl font-bold text-[#1a1a1a] mt-1">{inventarios.length + inventariosSetor.length}</p>
-                    </div>
-                    <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 shadow-sm">
-                      <p className="text-xs text-[#8c8c8c] font-medium uppercase tracking-wide">Inventarios Gerais</p>
-                      <p className="text-2xl font-bold text-blue-600 mt-1">{inventarios.length}</p>
-                    </div>
-                    <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 shadow-sm">
-                      <p className="text-xs text-[#8c8c8c] font-medium uppercase tracking-wide">Inventarios por Setor</p>
-                      <p className="text-2xl font-bold text-purple-600 mt-1">{inventariosSetor.length}</p>
-                    </div>
-                    <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 shadow-sm">
-                      <p className="text-xs text-[#8c8c8c] font-medium uppercase tracking-wide">Finalizados</p>
-                      <p className="text-2xl font-bold text-green-600 mt-1">{inventarios.filter(i => i.status === "Finalizado").length + inventariosSetor.filter(i => i.status === "Finalizado").length}</p>
-                    </div>
+                    {(() => {
+                      const filterFunc = (inv: { dataHora: string; escola?: string; denominacao?: string; status?: string }) => {
+                        const escola = inv.escola || inv.denominacao || "";
+                        const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || escola === instituicaoFiltro;
+                        const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                        const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                          const mesNum = mesNumero[mesFiltro];
+                          const parts = inv.dataHora.split("/");
+                          return parts.length >= 2 && parts[1] === mesNum;
+                        })();
+                        const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                        return matchInstituicao && matchAno && matchMes && matchStatus;
+                      };
+                      const filteredInv = inventarios.filter(filterFunc);
+                      const filteredInvSetor = inventariosSetor.filter(filterFunc);
+                      return (
+                        <>
+                          <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 shadow-sm">
+                            <p className="text-xs text-[#8c8c8c] font-medium uppercase tracking-wide">Total Inventarios</p>
+                            <p className="text-2xl font-bold text-[#1a1a1a] mt-1">{filteredInv.length + filteredInvSetor.length}</p>
+                          </div>
+                          <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 shadow-sm">
+                            <p className="text-xs text-[#8c8c8c] font-medium uppercase tracking-wide">Inventarios Gerais</p>
+                            <p className="text-2xl font-bold text-blue-600 mt-1">{filteredInv.length}</p>
+                          </div>
+                          <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 shadow-sm">
+                            <p className="text-xs text-[#8c8c8c] font-medium uppercase tracking-wide">Inventarios por Setor</p>
+                            <p className="text-2xl font-bold text-purple-600 mt-1">{filteredInvSetor.length}</p>
+                          </div>
+                          <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 shadow-sm">
+                            <p className="text-xs text-[#8c8c8c] font-medium uppercase tracking-wide">Finalizados</p>
+                            <p className="text-2xl font-bold text-green-600 mt-1">{filteredInv.filter(i => i.status === "Finalizado").length + filteredInvSetor.filter(i => i.status === "Finalizado").length}</p>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
 
                   {/* Inventarios Gerais */}
                   <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden shadow-sm">
                     <div className="px-5 py-3.5 border-b border-[#e5e5e5] flex items-center justify-between">
                       <div>
-                        <span className="text-sm font-semibold text-[#1a1a1a]">Inventarios Gerais ({inventarios.length})</span>
+                        <span className="text-sm font-semibold text-[#1a1a1a]">Inventarios Gerais ({inventarios.filter((inv) => {
+                          const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || inv.escola === instituicaoFiltro;
+                          const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                          const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                            const mesNum = mesNumero[mesFiltro];
+                            const parts = inv.dataHora.split("/");
+                            return parts.length >= 2 && parts[1] === mesNum;
+                          })();
+                          const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                          return matchInstituicao && matchAno && matchMes && matchStatus;
+                        }).length})</span>
                         <p className="text-xs text-[#8c8c8c] mt-0.5">Arrolamento de bens patrimoniais por escola</p>
                       </div>
                       <button
                         onClick={() => {
+                          const filteredInventarios = inventarios.filter((inv) => {
+                            const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || inv.escola === instituicaoFiltro;
+                            const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                            const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                              const mesNum = mesNumero[mesFiltro];
+                              const parts = inv.dataHora.split("/");
+                              return parts.length >= 2 && parts[1] === mesNum;
+                            })();
+                            const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                            return matchInstituicao && matchAno && matchMes && matchStatus;
+                          });
                           const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
                           const pw = doc.internal.pageSize.getWidth();
                           doc.setFontSize(14);
@@ -3643,7 +3938,7 @@ const getSidebarDescription = () => {
                           doc.text("RELATORIO DE INVENTARIOS GERAIS", pw / 2, 15, { align: "center" });
                           doc.setFontSize(9);
                           doc.setFont("helvetica", "normal");
-                          doc.text(`Gerado em: ${new Date().toLocaleString("pt-BR")} | Total: ${inventarios.length} inventarios`, pw / 2, 22, { align: "center" });
+                          doc.text(`Gerado em: ${new Date().toLocaleString("pt-BR")} | Total: ${filteredInventarios.length} inventarios`, pw / 2, 22, { align: "center" });
                           let y = 35;
                           doc.setFontSize(8);
                           doc.setFillColor(240, 240, 240);
@@ -3658,7 +3953,7 @@ const getSidebarDescription = () => {
                           doc.text("Status", 260, y);
                           y += 8;
                           doc.setFont("helvetica", "normal");
-                          inventarios.forEach((inv) => {
+                          filteredInventarios.forEach((inv) => {
                             if (y > 190) { doc.addPage(); y = 20; }
                             doc.text(inv.dataHora.split(",")[0] || "-", 12, y);
                             doc.text((inv.escola || "-").substring(0, 45), 40, y);
@@ -3691,7 +3986,17 @@ const getSidebarDescription = () => {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-[#e5e5e5]">
-                          {inventarios.map((inv) => (
+                          {inventarios.filter((inv) => {
+                            const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || inv.escola === instituicaoFiltro;
+                            const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                            const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                              const mesNum = mesNumero[mesFiltro];
+                              const parts = inv.dataHora.split("/");
+                              return parts.length >= 2 && parts[1] === mesNum;
+                            })();
+                            const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                            return matchInstituicao && matchAno && matchMes && matchStatus;
+                          }).map((inv) => (
                             <tr key={inv.id} className="hover:bg-[#fafafa]">
                               <td className="px-4 py-3 text-[#666]">{inv.dataHora.split(",")[0]}</td>
                               <td className="px-4 py-3 font-medium text-[#1a1a1a]">{inv.escola}</td>
@@ -3702,7 +4007,17 @@ const getSidebarDescription = () => {
                               <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded text-xs ${inv.status === "Finalizado" ? "bg-green-100 text-green-700" : inv.status === "Em Analise" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700"}`}>{inv.status}</span></td>
                             </tr>
                           ))}
-                          {inventarios.length === 0 && (
+                          {inventarios.filter((inv) => {
+                            const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || inv.escola === instituicaoFiltro;
+                            const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                            const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                              const mesNum = mesNumero[mesFiltro];
+                              const parts = inv.dataHora.split("/");
+                              return parts.length >= 2 && parts[1] === mesNum;
+                            })();
+                            const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                            return matchInstituicao && matchAno && matchMes && matchStatus;
+                          }).length === 0 && (
                             <tr><td colSpan={7} className="px-6 py-12 text-center text-[#aaa]">Nenhum inventario geral registrado.</td></tr>
                           )}
                         </tbody>
@@ -3714,11 +4029,32 @@ const getSidebarDescription = () => {
                   <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden shadow-sm">
                     <div className="px-5 py-3.5 border-b border-[#e5e5e5] flex items-center justify-between">
                       <div>
-                        <span className="text-sm font-semibold text-[#1a1a1a]">Inventarios por Setor ({inventariosSetor.length})</span>
+                        <span className="text-sm font-semibold text-[#1a1a1a]">Inventarios por Setor ({inventariosSetor.filter((inv) => {
+                          const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || (inv.denominacao || "") === instituicaoFiltro;
+                          const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                          const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                            const mesNum = mesNumero[mesFiltro];
+                            const parts = inv.dataHora.split("/");
+                            return parts.length >= 2 && parts[1] === mesNum;
+                          })();
+                          const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                          return matchInstituicao && matchAno && matchMes && matchStatus;
+                        }).length})</span>
                         <p className="text-xs text-[#8c8c8c] mt-0.5">Inventarios enviados por setor/sala</p>
                       </div>
                       <button
                         onClick={() => {
+                          const filteredInventariosSetor = inventariosSetor.filter((inv) => {
+                            const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || (inv.denominacao || "") === instituicaoFiltro;
+                            const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                            const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                              const mesNum = mesNumero[mesFiltro];
+                              const parts = inv.dataHora.split("/");
+                              return parts.length >= 2 && parts[1] === mesNum;
+                            })();
+                            const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                            return matchInstituicao && matchAno && matchMes && matchStatus;
+                          });
                           const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
                           const pw = doc.internal.pageSize.getWidth();
                           doc.setFontSize(14);
@@ -3726,7 +4062,7 @@ const getSidebarDescription = () => {
                           doc.text("RELATORIO DE INVENTARIOS POR SETOR", pw / 2, 15, { align: "center" });
                           doc.setFontSize(9);
                           doc.setFont("helvetica", "normal");
-                          doc.text(`Gerado em: ${new Date().toLocaleString("pt-BR")} | Total: ${inventariosSetor.length} inventarios`, pw / 2, 22, { align: "center" });
+                          doc.text(`Gerado em: ${new Date().toLocaleString("pt-BR")} | Total: ${filteredInventariosSetor.length} inventarios`, pw / 2, 22, { align: "center" });
                           let y = 35;
                           doc.setFontSize(8);
                           doc.setFillColor(240, 240, 240);
@@ -3740,7 +4076,7 @@ const getSidebarDescription = () => {
                           doc.text("Status", 255, y);
                           y += 8;
                           doc.setFont("helvetica", "normal");
-                          inventariosSetor.forEach((inv) => {
+                          filteredInventariosSetor.forEach((inv) => {
                             if (y > 190) { doc.addPage(); y = 20; }
                             doc.text(inv.dataHora.split(",")[0] || "-", 12, y);
                             doc.text((inv.denominacao || "-").substring(0, 40), 40, y);
@@ -3772,7 +4108,17 @@ const getSidebarDescription = () => {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-[#e5e5e5]">
-                          {inventariosSetor.map((inv) => (
+                          {inventariosSetor.filter((inv) => {
+                            const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || (inv.denominacao || "") === instituicaoFiltro;
+                            const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                            const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                              const mesNum = mesNumero[mesFiltro];
+                              const parts = inv.dataHora.split("/");
+                              return parts.length >= 2 && parts[1] === mesNum;
+                            })();
+                            const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                            return matchInstituicao && matchAno && matchMes && matchStatus;
+                          }).map((inv) => (
                             <tr key={inv.id} className="hover:bg-[#fafafa]">
                               <td className="px-4 py-3 text-[#666]">{inv.dataHora.split(",")[0]}</td>
                               <td className="px-4 py-3 font-medium text-[#1a1a1a]">{inv.denominacao}</td>
@@ -3783,7 +4129,17 @@ const getSidebarDescription = () => {
                               <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded text-xs ${inv.status === "Finalizado" ? "bg-green-100 text-green-700" : inv.status === "Em Analise" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700"}`}>{inv.status}</span></td>
                             </tr>
                           ))}
-                          {inventariosSetor.length === 0 && (
+                          {inventariosSetor.filter((inv) => {
+                            const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || (inv.denominacao || "") === instituicaoFiltro;
+                            const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                            const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                              const mesNum = mesNumero[mesFiltro];
+                              const parts = inv.dataHora.split("/");
+                              return parts.length >= 2 && parts[1] === mesNum;
+                            })();
+                            const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                            return matchInstituicao && matchAno && matchMes && matchStatus;
+                          }).length === 0 && (
                             <tr><td colSpan={7} className="px-6 py-12 text-center text-[#aaa]">Nenhum inventario por setor registrado.</td></tr>
                           )}
                         </tbody>
