@@ -4150,7 +4150,13 @@ const getSidebarDescription = () => {
               )}
             </div>
 ) : activeSidebar === "dashboard" ? (
-  <AdminDashboard solicitacoes={solicitacoes} />
+  <AdminDashboard 
+    solicitacoes={solicitacoes} 
+    inventarios={inventarios}
+    inventariosSetor={inventariosSetor}
+    usuarios={usuarios}
+    instituicoes={instituicoes}
+  />
 ) : activeSidebar === "arrolamento" ? (
   /* ARROLAMENTO VIEW */
   <ArrolamentoView />
