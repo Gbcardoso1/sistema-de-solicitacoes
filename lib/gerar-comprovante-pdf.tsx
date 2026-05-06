@@ -12,7 +12,6 @@ interface DadosComprovante {
   instituicao: string;
   dataHora: string;
   itens: ItemComprovante[];
-  numeroSolicitacao?: string;
 }
 
 interface ItemTransferencia {
@@ -81,7 +80,6 @@ export function gerarComprovantePDF(dados: DadosComprovante) {
   y += 7;
 
   const campos = [
-    { label: "N Solicitacao:", valor: dados.numeroSolicitacao || "N/A" },
     { label: "Nome:", valor: dados.nome },
     { label: "Matricula:", valor: dados.matricula },
     { label: "Instituicao:", valor: dados.instituicao },

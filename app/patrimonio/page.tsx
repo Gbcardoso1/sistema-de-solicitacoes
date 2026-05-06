@@ -7,7 +7,7 @@ import { ArrowLeft, Plus, Trash2, Armchair, Download, AlertTriangle, X, Minus } 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { addSolicitacao, gerarNumeroSolicitacao } from "@/lib/solicitacoes-store";
+import { addSolicitacao } from "@/lib/solicitacoes-store";
 import { gerarComprovantePDF } from "@/lib/gerar-comprovante-pdf";
 import { getNomesAtivos } from "@/lib/itens-catalogo-store";
 import { getInstituicoesAtivas } from "@/lib/instituicoes-store";
@@ -22,7 +22,6 @@ export default function PatrimonioPage() {
   const [patrimonio, setPatrimonio] = useState<PatrimonioItem[]>([{ id: 1, tipo: "", quantidade: 0, setor: "" }]);
   const [modalAberto, setModalAberto] = useState(false);
   const [pdfBaixado, setPdfBaixado] = useState(false);
-  const [numeroSolicitacao, setNumeroSolicitacao] = useState("");
 
   const tiposPatrimonio = useMemo(() => getNomesAtivos("patrimonio"), []);
 
@@ -39,28 +38,26 @@ export default function PatrimonioPage() {
 
   const itensFiltrados = patrimonio.filter(p => p.tipo && p.quantidade > 0);
 
-  const getDadosComprovante = (numSol: string) => {
+  const getDadosComprovante = () => {
     const dataHora = new Date().toLocaleString("pt-BR");
     const itensComprovante = itensFiltrados.map(p => ({ descricao: `${p.tipo} (Setor: ${p.setor || "Nao informado"})`, quantidade: p.quantidade }));
-    return { tipo: "patrimonio", nome, matricula, instituicao, dataHora, itens: itensComprovante, numeroSolicitacao: numSol };
+    return { tipo: "patrimonio", nome, matricula, instituicao, dataHora, itens: itensComprovante };
   };
 
   const handleFinalizar = () => {
     if (!nome || !matricula || !instituicao) { alert("Preencha todos os dados do solicitante"); return; }
     if (itensFiltrados.length === 0) { alert("Adicione pelo menos um item com quantidade maior que zero"); return; }
-    const novoNumero = gerarNumeroSolicitacao();
-    setNumeroSolicitacao(novoNumero);
     setModalAberto(true);
     setPdfBaixado(false);
   };
 
   const handleBaixarPDF = () => {
-    gerarComprovantePDF(getDadosComprovante(numeroSolicitacao));
+    gerarComprovantePDF(getDadosComprovante());
     setPdfBaixado(true);
   };
 
   const handleConfirmarEnvio = () => {
-    addSolicitacao({ tipo: "patrimonio", nome, matricula, instituicao, dados: { patrimonio }, itens: itensFiltrados.map(p => ({ tipo: p.tipo, quantidade: p.quantidade, setor: p.setor })) }, numeroSolicitacao);
+    addSolicitacao({ tipo: "patrimonio", nome, matricula, instituicao, dados: { patrimonio }, itens: itensFiltrados.map(p => ({ tipo: p.tipo, quantidade: p.quantidade, setor: p.setor })) });
     setModalAberto(false);
     alert("Solicitacao finalizada");
     router.push("/");
@@ -230,10 +227,6 @@ export default function PatrimonioPage() {
               <button onClick={() => setModalAberto(false)} className="text-[#9ca3af] hover:text-[#374151] transition-colors" aria-label="Fechar"><X className="w-5 h-5" /></button>
             </div>
             <div className="px-5 py-4 space-y-4">
-              <div className="bg-[#eef2ff] border border-[#c7d2fe] rounded-lg p-3 mb-4">
-                <p className="text-xs text-[#4338ca] font-medium">Numero da Solicitacao</p>
-                <p className="text-lg font-bold text-[#3730a3]">{numeroSolicitacao}</p>
-              </div>
               <div>
                 <h3 className="text-sm font-bold text-[#1e293b] mb-2">Dados do Solicitante</h3>
                 <div className="space-y-1 text-sm text-[#374151]">

@@ -1831,6 +1831,23 @@ export default function AdminPage() {
     doc.text("SOLICITACAO - " + solicitacao.tipo.toUpperCase(), pw / 2, 17, { align: "center" });
     y = 38;
 
+    // Declaration text for patrimonio requests
+    if (solicitacao.tipo === "patrimonio") {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(17, 28, 68);
+      doc.text("Declaracao de Responsabilidade por Material Permanente", pw / 2, y, { align: "center" });
+      y += 6;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(60, 60, 60);
+      const declarationText = "Declaro, para os devidos fins, que recebi o material permanente relacionado abaixo, o qual sera utilizado exclusivamente para fins de servico nesta unidade de ensino, sob minha responsabilidade. Comprometo-me a zelar pela sua adequada conservacao e a devolve-lo ao patrimonio publico em perfeitas condicoes, ressalvadas as deterioracoes naturais decorrentes do uso regular, assim que o referido material deixar de ser necessario para o desempenho das atividades da unidade.";
+      const splitDeclaration = doc.splitTextToSize(declarationText, cw);
+      doc.text(splitDeclaration, m, y);
+      y += splitDeclaration.length * 3.5 + 8;
+    }
+
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.setTextColor(17, 28, 68);

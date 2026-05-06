@@ -91,7 +91,7 @@ export default function DuvidasPage() {
           {faqs.map((faq, index) => (
             <div
               key={index}
-              className="bg-white rounded-2xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden transition-all duration-300 hover:shadow-md"
+              className="bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden transition-all duration-300 hover:border-[#0fb992]"
             >
               <button
                 onClick={() => toggleFAQ(index)}

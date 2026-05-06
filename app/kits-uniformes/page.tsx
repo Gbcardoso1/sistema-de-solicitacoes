@@ -7,7 +7,7 @@ import { ArrowLeft, Plus, Trash2, Download, AlertTriangle, X, Package, Minus } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { addSolicitacao, gerarNumeroSolicitacao } from "@/lib/solicitacoes-store";
+import { addSolicitacao } from "@/lib/solicitacoes-store";
 import { gerarComprovantePDF } from "@/lib/gerar-comprovante-pdf";
 import { getNomesAtivos } from "@/lib/itens-catalogo-store";
 import { getInstituicoesAtivas } from "@/lib/instituicoes-store";
@@ -27,7 +27,6 @@ export default function KitsUniformesPage() {
   const [instituicao, setInstituicao] = useState("");
   const [modalAberto, setModalAberto] = useState(false);
   const [pdfBaixado, setPdfBaixado] = useState(false);
-  const [numeroSolicitacao, setNumeroSolicitacao] = useState("");
 
   const tiposUniforme = useMemo(() => getNomesAtivos("uniforme"), []);
   const tamanhosRoupas = useMemo(() => getNomesAtivos("tamanhosRoupas"), []);
@@ -75,7 +74,7 @@ export default function KitsUniformesPage() {
   const profFiltrados = kitsProfessor.filter(k => k.quantidade > 0 || k.quantidadePolo > 0);
   const mochilasFiltradas = mochilas.filter(m => m.quantidade > 0);
 
-  const getDadosComprovante = (numSol: string) => {
+  const getDadosComprovante = () => {
     const dataHora = new Date().toLocaleString("pt-BR");
     const itensComprovante = [
       ...uniformesFiltrados.map(u => ({ descricao: `Uniforme ${u.tipo} - ${u.genero} - Tam: ${u.tamanho}`, quantidade: u.quantidade })),
@@ -84,20 +83,18 @@ export default function KitsUniformesPage() {
       ...kitsProfessor.filter(k => k.quantidadePolo > 0).map(k => ({ descricao: `Polo Professor: ${k.tamanhoPolo}`, quantidade: k.quantidadePolo })),
       ...mochilasFiltradas.map(m => ({ descricao: `Mochila: ${m.tamanho}`, quantidade: m.quantidade })),
     ];
-    return { tipo: "kits-uniformes", nome, matricula, instituicao, dataHora, itens: itensComprovante, numeroSolicitacao: numSol };
+    return { tipo: "kits-uniformes", nome, matricula, instituicao, dataHora, itens: itensComprovante };
   };
 
   const handleFinalizar = () => {
     if (!nome || !matricula || !instituicao) { alert("Preencha todos os dados do solicitante"); return; }
     const temItens = uniformesFiltrados.length > 0 || calcadosFiltrados.length > 0 || kitsFiltrados.length > 0 || profFiltrados.length > 0 || mochilasFiltradas.length > 0;
     if (!temItens) { alert("Adicione pelo menos um item com quantidade maior que zero"); return; }
-    const novoNumero = gerarNumeroSolicitacao();
-    setNumeroSolicitacao(novoNumero);
     setModalAberto(true);
     setPdfBaixado(false);
   };
 
-  const handleBaixarPDF = () => { gerarComprovantePDF(getDadosComprovante(numeroSolicitacao)); setPdfBaixado(true); };
+  const handleBaixarPDF = () => { gerarComprovantePDF(getDadosComprovante()); setPdfBaixado(true); };
 
   const handleConfirmarEnvio = () => {
     addSolicitacao({
@@ -113,7 +110,7 @@ export default function KitsUniformesPage() {
       kitsAlunoDetalhes: kitsFiltrados.map(k => ({ tipo: k.tipo, quantidade: k.quantidade })),
       polosProfDetalhes: kitsProfessor.filter(k => k.quantidadePolo > 0).map(k => ({ tipo: k.kit, tamanho: k.tamanhoPolo, quantidade: k.quantidadePolo })),
       mochilasDetalhes: mochilasFiltradas.map(m => ({ tipo: m.tamanho, quantidade: m.quantidade })),
-    }, numeroSolicitacao);
+    });
     setModalAberto(false);
     alert("Solicitacao finalizada");
     router.push("/");
