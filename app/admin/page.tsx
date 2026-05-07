@@ -1816,20 +1816,50 @@ export default function AdminPage() {
     setDialogOpen(true);
   };
 
-  const handleBaixarPDF = (solicitacao: Solicitacao) => {
+  const handleBaixarPDF = async (solicitacao: Solicitacao) => {
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const pw = doc.internal.pageSize.getWidth();
     const m = 15;
     const cw = pw - m * 2;
     let y = 0;
 
-    doc.setFillColor(17, 28, 68);
-    doc.rect(0, 0, pw, 28, "F");
+    // Add logo image
+    try {
+      const logoImg = new Image();
+      logoImg.crossOrigin = "anonymous";
+      await new Promise<void>((resolve, reject) => {
+        logoImg.onload = () => resolve();
+        logoImg.onerror = () => reject();
+        logoImg.src = "/logo-prefeitura.png";
+      });
+      const canvas = document.createElement("canvas");
+      canvas.width = logoImg.width;
+      canvas.height = logoImg.height;
+      const ctx = canvas.getContext("2d");
+      ctx?.drawImage(logoImg, 0, 0);
+      const logoDataUrl = canvas.toDataURL("image/png");
+      // Logo centered at top - scaled to fit width nicely
+      const logoWidth = 80;
+      const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
+      doc.addImage(logoDataUrl, "PNG", (pw - logoWidth) / 2, 8, logoWidth, logoHeight);
+      y = 8 + logoHeight + 8;
+    } catch {
+      // Fallback to text header if logo fails
+      doc.setFillColor(17, 28, 68);
+      doc.rect(0, 0, pw, 28, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.setTextColor(255, 255, 255);
+      doc.text("PREFEITURA MUNICIPAL DE SAQUAREMA", pw / 2, 17, { align: "center" });
+      y = 38;
+    }
+    
+    // Tipo de solicitacao subtitle
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.setTextColor(255, 255, 255);
-    doc.text("SOLICITACAO - " + solicitacao.tipo.toUpperCase(), pw / 2, 17, { align: "center" });
-    y = 38;
+    doc.setFontSize(12);
+    doc.setTextColor(17, 28, 68);
+    doc.text("SOLICITACAO DE " + solicitacao.tipo.toUpperCase(), pw / 2, y, { align: "center" });
+    y += 10;
 
     // Declaration text for patrimonio requests
     if (solicitacao.tipo === "patrimonio") {
@@ -1923,6 +1953,28 @@ export default function AdminPage() {
     if (solicitacao.mochilasDetalhes?.length) addSecao("MOCHILAS", solicitacao.mochilasDetalhes.map((mo) => ({ desc: mo.tipo, qtd: mo.quantidade })));
     if (solicitacao.papelaria?.length) addSecao("PAPELARIA", solicitacao.papelaria.map((p) => ({ desc: p.tipo, qtd: p.quantidade })));
     if (solicitacao.cozinha?.length) addSecao("COZINHA", solicitacao.cozinha.map((c) => ({ desc: c.tipo, qtd: c.quantidade })));
+    // Transferencia - usar funcao especifica do gerar-comprovante-pdf
+    if (solicitacao.tipo === "transferencia") {
+      const { gerarPDFTransferencia } = await import("@/lib/gerar-comprovante-pdf");
+      const itensTransf = (solicitacao.itensTransferencia || solicitacao.dados?.itens || []) as { numeroPatrimonio?: string; descricaoItem?: string }[];
+      await gerarPDFTransferencia({
+        tmbpPms: solicitacao.tmbpPms || (solicitacao.dados?.tmbpPms as string) || "",
+        data: solicitacao.dataHora.split(",")[0] || new Date().toLocaleDateString("pt-BR"),
+        situacao: `${solicitacao.situacao || (solicitacao.dados?.situacao as string) || ""} / ${solicitacao.condicao || (solicitacao.dados?.condicao as string) || ""}`.trim().replace(/^\s*\/\s*$|^\s*\/\s*|\s*\/\s*$/g, ""),
+        unidadeOrigem: solicitacao.unidadeOrigem || (solicitacao.dados?.unidadeOrigem as string) || solicitacao.instituicao || "",
+        responsavelOrigem: (solicitacao.dados?.responsavelOrigem as string) || solicitacao.nome || "",
+        matriculaOrigem: solicitacao.matricula || "",
+        unidadeDestino: solicitacao.unidadeDestino || (solicitacao.dados?.unidadeDestino as string) || "",
+        responsavelDestino: solicitacao.responsavelDestino || (solicitacao.dados?.responsavelDestino as string) || "",
+        matriculaDestino: solicitacao.matriculaDestino || (solicitacao.dados?.matriculaDestino as string) || "",
+        itens: itensTransf.map((it) => ({
+          numeroPatrimonio: it.numeroPatrimonio || "",
+          descricaoItem: it.descricaoItem || ""
+        }))
+      });
+      return;
+    }
+
     if (solicitacao.itens?.length && solicitacao.tipo === "patrimonio") {
       // Expandir itens individuais com lacres
       const itensExpandidos: { desc: string; qtd: number }[] = [];
@@ -3005,6 +3057,171 @@ const getSidebarDescription = () => {
                         >
                           <Eye className="w-3 h-3 mr-1" /> Ver
                         </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            // Gerar PDF do inventario por setor
+                            const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+                            const pw = doc.internal.pageSize.getWidth();
+                            const ph = doc.internal.pageSize.getHeight();
+                            const m = 10;
+                            const cw = pw - m * 2;
+                            const anoAtual = new Date().getFullYear();
+
+                            const gerarPaginaSetor = (itensPage: typeof inv.itens, pageNum: number, isFirst: boolean) => {
+                              let y = 8;
+                              
+                              doc.setFont("helvetica", "bold");
+                              doc.setFontSize(9);
+                              doc.setTextColor(0, 0, 0);
+                              doc.text("Estado do Rio de Janeiro", pw / 2, y, { align: "center" });
+                              y += 4;
+                              doc.text("PREFEITURA MUNICIPAL DE SAQUAREMA", pw / 2, y, { align: "center" });
+                              y += 4;
+                              doc.setFont("helvetica", "normal");
+                              doc.setFontSize(8);
+                              doc.text("Secretaria de Patrimonio", pw / 2, y, { align: "center" });
+                              y += 6;
+
+                              if (isFirst) {
+                                doc.setDrawColor(0, 0, 0);
+                                doc.setLineWidth(0.3);
+                                doc.rect(m, y, cw, 10);
+                                doc.setFont("helvetica", "bold");
+                                doc.setFontSize(8);
+                                doc.text("Secretaria + Orgao Responsavel:", m + 2, y + 4);
+                                doc.setFont("helvetica", "normal");
+                                doc.text(inv.secretaria.toUpperCase(), m + 2, y + 8);
+                                y += 10;
+
+                                doc.rect(m, y, cw, 10);
+                                doc.setFont("helvetica", "bold");
+                                doc.text("Denominacao do Imovel + Setor de Responsabilidade:", m + 2, y + 4);
+                                doc.setFont("helvetica", "normal");
+                                doc.text(inv.denominacao.toUpperCase(), m + 2, y + 8);
+                                y += 10;
+
+                                doc.rect(m, y, cw, 10);
+                                doc.setFont("helvetica", "bold");
+                                doc.text("Endereco (Rua, n, complemento, bairro):", m + 2, y + 4);
+                                doc.setFont("helvetica", "normal");
+                                doc.text(inv.endereco.toUpperCase(), m + 2, y + 8);
+                                y += 10;
+
+                                doc.rect(m, y, cw, 14);
+                                doc.setFont("helvetica", "bold");
+                                doc.setFontSize(7);
+                                doc.text("Responsavel pelo Orgao", m + cw / 2, y + 3, { align: "center" });
+                                doc.line(m, y + 5, pw - m, y + 5);
+                                doc.setFont("helvetica", "normal");
+                                doc.text("Nome:", m + 2, y + 9);
+                                doc.text(inv.respNome.toUpperCase(), m + 15, y + 9);
+                                doc.text("CPF:", m + cw / 2, y + 9);
+                                doc.text(inv.respCPF, m + cw / 2 + 12, y + 9);
+                                doc.text("Matricula:", m + cw * 0.75, y + 9);
+                                doc.text(inv.respMatricula, m + cw * 0.75 + 18, y + 9);
+                                y += 14;
+
+                                doc.rect(m, y, cw, 14);
+                                doc.setFont("helvetica", "bold");
+                                doc.text("Agente Patrimonial", m + cw / 2, y + 3, { align: "center" });
+                                doc.line(m, y + 5, pw - m, y + 5);
+                                doc.setFont("helvetica", "normal");
+                                doc.text("Nome:", m + 2, y + 9);
+                                doc.text(inv.agenteNome.toUpperCase(), m + 15, y + 9);
+                                doc.text("CPF:", m + cw / 2, y + 9);
+                                doc.text(inv.agenteCPF, m + cw / 2 + 12, y + 9);
+                                doc.text("Matricula:", m + cw * 0.75, y + 9);
+                                doc.text(inv.agenteMatricula, m + cw * 0.75 + 18, y + 9);
+                                y += 14;
+
+                                doc.rect(m, y, cw, 28);
+                                doc.setFont("helvetica", "bold");
+                                doc.setFontSize(8);
+                                doc.text("TERMO DE RESPONSABILIDADE", m + cw / 2, y + 5, { align: "center" });
+                                doc.setFont("helvetica", "normal");
+                                doc.setFontSize(6);
+                                const termoText = "Na qualidade de responsavel, comprometo-me pela guarda dos bens arrolados descritos na(s) folha(s) anexa(s) numerada(s), obrigando-me a responder pela posse, sujeitando-me a responder perante a Municipalidade em caso de extravio ou semelhante, a zelar pela sua conservacao, bem como, informar ao orgao gestor responsavel pelo Patrimonio Municipal toda e qualquer movimentacao/ocorrencia ou baixa dos respectivos bens.";
+                                doc.text(termoText, m + 2, y + 10, { maxWidth: cw - 4 });
+                                y += 28;
+
+                                doc.setFontSize(6);
+                                doc.text("(Utilize tantas relacoes conforme o necessario para enumerar todos os Bens)", m + cw / 2, y + 4, { align: "center" });
+                                y += 6;
+                              } else {
+                                doc.setFont("helvetica", "bold");
+                                doc.setFontSize(8);
+                                doc.text("Denominacao do Imovel:", m, y);
+                                y += 4;
+                                doc.setFont("helvetica", "normal");
+                                doc.text(inv.denominacao.toUpperCase(), m, y);
+                                y += 6;
+                              }
+
+                              const colW = cw / 4;
+                              doc.setDrawColor(0, 0, 0);
+                              doc.setLineWidth(0.3);
+                              doc.rect(m, y, cw, 6);
+                              doc.setFont("helvetica", "bold");
+                              doc.setFontSize(7);
+                              doc.text("Codigo Bem", m + 2, y + 4);
+                              doc.text("Descricao Generica", m + colW, y + 4);
+                              doc.text("Codigo Bem", m + colW * 2, y + 4);
+                              doc.text("Descricao Generica", m + colW * 3, y + 4);
+                              doc.line(m + colW, y, m + colW, y + 6);
+                              doc.line(m + colW * 2, y, m + colW * 2, y + 6);
+                              doc.line(m + colW * 3, y, m + colW * 3, y + 6);
+                              y += 6;
+
+                              doc.setFont("helvetica", "normal");
+                              doc.setFontSize(7);
+                              const rowHeight = 6;
+                              const maxRows = isFirst ? 10 : 20;
+
+                              for (let i = 0; i < maxRows; i++) {
+                                doc.rect(m, y, cw, rowHeight);
+                                doc.line(m + colW, y, m + colW, y + rowHeight);
+                                doc.line(m + colW * 2, y, m + colW * 2, y + rowHeight);
+                                doc.line(m + colW * 3, y, m + colW * 3, y + rowHeight);
+                                const leftIdx = i * 2;
+                                const rightIdx = i * 2 + 1;
+                                if (itensPage[leftIdx]) {
+                                  doc.text(itensPage[leftIdx].codigo || "", m + 2, y + 4);
+                                  doc.text(itensPage[leftIdx].descricao.substring(0, 25), m + colW + 2, y + 4);
+                                }
+                                if (itensPage[rightIdx]) {
+                                  doc.text(itensPage[rightIdx].codigo || "", m + colW * 2 + 2, y + 4);
+                                  doc.text(itensPage[rightIdx].descricao.substring(0, 25), m + colW * 3 + 2, y + 4);
+                                }
+                                y += rowHeight;
+                              }
+
+                              doc.setFontSize(6);
+                              doc.text("Rua Coronel Madureira, 77 - Centro - Saquarema - RJ - CEP: 28990-756", pw / 2, ph - 10, { align: "center" });
+                            };
+
+                            const itensPerFirstPage = 20;
+                            const itensPerPage = 40;
+                            gerarPaginaSetor(inv.itens.slice(0, itensPerFirstPage), 1, true);
+
+                            if (inv.itens.length > itensPerFirstPage) {
+                              let remaining = inv.itens.slice(itensPerFirstPage);
+                              let pageNum = 2;
+                              while (remaining.length > 0) {
+                                doc.addPage();
+                                gerarPaginaSetor(remaining.slice(0, itensPerPage), pageNum, false);
+                                remaining = remaining.slice(itensPerPage);
+                                pageNum++;
+                              }
+                            }
+
+                            doc.save(`Inventario_Setor_${inv.denominacao.replace(/\s+/g, "_").substring(0, 30)}_${anoAtual}.pdf`);
+                          }}
+                          className="h-7 text-xs border-[#e5e5e5]"
+                        >
+                          <Download className="w-3 h-3 mr-1" /> PDF
+                        </Button>
                       </div>
                     </div>
                   )) : (
@@ -3515,54 +3732,127 @@ const getSidebarDescription = () => {
                 <div className="space-y-4">
                   {/* Header */}
                   <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden shadow-sm">
-                    <div className="px-5 py-3.5 border-b border-[#e5e5e5] flex items-center justify-between">
-                      <div>
+                    {/* Filters */}
+                    <div className="px-5 py-3.5 border-b border-[#e5e5e5] flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
                         <span className="text-sm font-semibold text-[#1a1a1a]">
-                          Relatorio de Transferencias ({solicitacoes.filter(s => s.tipo === "transferencia").length} registros)
+                          Relatorio de Transferencias ({(() => {
+                            const transferencias = solicitacoes.filter(s => s.tipo === "transferencia");
+                            const filtered = transferencias.filter((t) => {
+                              const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || (t.unidadeOrigem || t.dados?.unidadeOrigem || t.instituicao || "") === instituicaoFiltro;
+                              const matchAno = anoFiltro === "Todos os Anos" || t.dataHora.includes(anoFiltro);
+                              const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                                const mesNum = mesNumero[mesFiltro];
+                                const parts = t.dataHora.split("/");
+                                return parts.length >= 2 && parts[1] === mesNum;
+                              })();
+                              const matchStatus = statusFiltro === "Todos os Status" || (t.status || "Pendente") === statusFiltro;
+                              return matchInstituicao && matchAno && matchMes && matchStatus;
+                            });
+                            return filtered.length;
+                          })()} registros)
                         </span>
-                        <p className="text-xs text-[#8c8c8c] mt-0.5">Todas as transferencias de itens entre unidades</p>
                       </div>
-                      <button
-                        onClick={() => {
-                          const transferencias = solicitacoes.filter(s => s.tipo === "transferencia");
-                          const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-                          const pw = doc.internal.pageSize.getWidth();
-                          doc.setFontSize(14);
-                          doc.setFont("helvetica", "bold");
-                          doc.text("RELATORIO DE TRANSFERENCIAS", pw / 2, 15, { align: "center" });
-                          doc.setFontSize(9);
-                          doc.setFont("helvetica", "normal");
-                          doc.text(`Gerado em: ${new Date().toLocaleString("pt-BR")} | Total: ${transferencias.length} transferencias`, pw / 2, 22, { align: "center" });
-                          let y = 35;
-                          doc.setFontSize(8);
-                          doc.setFillColor(240, 240, 240);
-                          doc.rect(10, y - 4, pw - 20, 7, "F");
-                          doc.setFont("helvetica", "bold");
-                          doc.text("Data", 12, y);
-                          doc.text("Origem", 40, y);
-                          doc.text("Destino", 100, y);
-                          doc.text("Responsavel Origem", 160, y);
-                          doc.text("Situacao", 220, y);
-                          doc.text("Condicao", 250, y);
-                          y += 8;
-                          doc.setFont("helvetica", "normal");
-                          transferencias.forEach((t) => {
-                            if (y > 190) { doc.addPage(); y = 20; }
-                            doc.text(t.dataHora.split(",")[0] || "-", 12, y);
-                            doc.text((t.unidadeOrigem || t.dados?.unidadeOrigem || t.instituicao || "-").substring(0, 35), 40, y);
-                            doc.text((t.unidadeDestino || t.dados?.unidadeDestino || "-").substring(0, 35), 100, y);
-                            doc.text((t.dados?.responsavelOrigem || t.nome || "-").substring(0, 30), 160, y);
-                            doc.text(t.situacao || t.dados?.situacao || "-", 220, y);
-                            doc.text(t.condicao || t.dados?.condicao || "-", 250, y);
-                            y += 6;
-                          });
-                          doc.save("relatorio_transferencias.pdf");
-                        }}
-                        className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-[#111c44] hover:bg-[#0e1735] rounded-lg transition-colors shadow-sm"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                        Baixar PDF
-                      </button>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Select value={instituicaoFiltro} onValueChange={setInstituicaoFiltro}>
+                          <SelectTrigger className="w-48 h-8 text-xs border-[#e5e5e5] bg-white text-[#5a5a5a]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {instituicoes.map((inst) => (
+                              <SelectItem key={inst} value={inst}>{inst}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select value={mesFiltro} onValueChange={setMesFiltro}>
+                          <SelectTrigger className="w-40 h-8 text-xs border-[#e5e5e5] bg-white text-[#5a5a5a]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {meses.map((m) => (
+                              <SelectItem key={m} value={m}>{m}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select value={anoFiltro} onValueChange={setAnoFiltro}>
+                          <SelectTrigger className="w-36 h-8 text-xs border-[#e5e5e5] bg-white text-[#5a5a5a]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {anos.map((a) => (
+                              <SelectItem key={a} value={a}>{a}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select value={statusFiltro} onValueChange={setStatusFiltro}>
+                          <SelectTrigger className="w-40 h-8 text-xs border-[#e5e5e5] bg-white text-[#5a5a5a]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Todos os Status">Todos os Status</SelectItem>
+                            <SelectItem value="Pendente">Pendente</SelectItem>
+                            <SelectItem value="Processamento">Processamento</SelectItem>
+                            <SelectItem value="Finalizado">Finalizado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <button
+                          onClick={clearFilters}
+                          className="px-3 py-1.5 text-xs font-medium text-[#5a5a5a] border border-[#e5e5e5] rounded-lg hover:bg-[#f9f9f9] transition-colors"
+                        >
+                          Limpar
+                        </button>
+                        <button
+                          onClick={() => {
+                            const transferencias = solicitacoes.filter(s => s.tipo === "transferencia").filter((t) => {
+                              const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || (t.unidadeOrigem || t.dados?.unidadeOrigem || t.instituicao || "") === instituicaoFiltro;
+                              const matchAno = anoFiltro === "Todos os Anos" || t.dataHora.includes(anoFiltro);
+                              const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                                const mesNum = mesNumero[mesFiltro];
+                                const parts = t.dataHora.split("/");
+                                return parts.length >= 2 && parts[1] === mesNum;
+                              })();
+                              const matchStatus = statusFiltro === "Todos os Status" || (t.status || "Pendente") === statusFiltro;
+                              return matchInstituicao && matchAno && matchMes && matchStatus;
+                            });
+                            const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+                            const pw = doc.internal.pageSize.getWidth();
+                            doc.setFontSize(14);
+                            doc.setFont("helvetica", "bold");
+                            doc.text("RELATORIO DE TRANSFERENCIAS", pw / 2, 15, { align: "center" });
+                            doc.setFontSize(9);
+                            doc.setFont("helvetica", "normal");
+                            doc.text(`Gerado em: ${new Date().toLocaleString("pt-BR")} | Total: ${transferencias.length} transferencias`, pw / 2, 22, { align: "center" });
+                            let y = 35;
+                            doc.setFontSize(8);
+                            doc.setFillColor(240, 240, 240);
+                            doc.rect(10, y - 4, pw - 20, 7, "F");
+                            doc.setFont("helvetica", "bold");
+                            doc.text("Data", 12, y);
+                            doc.text("Origem", 40, y);
+                            doc.text("Destino", 100, y);
+                            doc.text("Responsavel Origem", 160, y);
+                            doc.text("Situacao", 220, y);
+                            doc.text("Condicao", 250, y);
+                            y += 8;
+                            doc.setFont("helvetica", "normal");
+                            transferencias.forEach((t) => {
+                              if (y > 190) { doc.addPage(); y = 20; }
+                              doc.text(t.dataHora.split(",")[0] || "-", 12, y);
+                              doc.text((t.unidadeOrigem || t.dados?.unidadeOrigem || t.instituicao || "-").substring(0, 35), 40, y);
+                              doc.text((t.unidadeDestino || t.dados?.unidadeDestino || "-").substring(0, 35), 100, y);
+                              doc.text((t.dados?.responsavelOrigem || t.nome || "-").substring(0, 30), 160, y);
+                              doc.text(t.situacao || t.dados?.situacao || "-", 220, y);
+                              doc.text(t.condicao || t.dados?.condicao || "-", 250, y);
+                              y += 6;
+                            });
+                            doc.save("relatorio_transferencias.pdf");
+                          }}
+                          className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-[#111c44] hover:bg-[#0e1735] rounded-lg transition-colors shadow-sm"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          Baixar Relatorio Completo (PDF)
+                        </button>
+                      </div>
                     </div>
 
                     {/* Tabela */}
@@ -3582,7 +3872,17 @@ const getSidebarDescription = () => {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-[#e5e5e5]">
-                          {solicitacoes.filter(s => s.tipo === "transferencia").map((t) => (
+                          {solicitacoes.filter(s => s.tipo === "transferencia").filter((t) => {
+                            const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || (t.unidadeOrigem || t.dados?.unidadeOrigem || t.instituicao || "") === instituicaoFiltro;
+                            const matchAno = anoFiltro === "Todos os Anos" || t.dataHora.includes(anoFiltro);
+                            const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                              const mesNum = mesNumero[mesFiltro];
+                              const parts = t.dataHora.split("/");
+                              return parts.length >= 2 && parts[1] === mesNum;
+                            })();
+                            const matchStatus = statusFiltro === "Todos os Status" || (t.status || "Pendente") === statusFiltro;
+                            return matchInstituicao && matchAno && matchMes && matchStatus;
+                          }).map((t) => (
                             <tr key={t.id} className="hover:bg-[#fafafa]">
                               <td className="px-4 py-3 text-[#666]">{t.dataHora.split(",")[0]}</td>
                               <td className="px-4 py-3 font-medium text-[#1a1a1a]">{(t.unidadeOrigem || t.dados?.unidadeOrigem || t.instituicao || "-").substring(0, 30)}</td>
@@ -3595,7 +3895,17 @@ const getSidebarDescription = () => {
                               <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded text-xs ${t.status === "Finalizado" ? "bg-green-100 text-green-700" : t.status === "Processamento" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700"}`}>{t.status || "Pendente"}</span></td>
                             </tr>
                           ))}
-                          {solicitacoes.filter(s => s.tipo === "transferencia").length === 0 && (
+                          {solicitacoes.filter(s => s.tipo === "transferencia").filter((t) => {
+                            const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || (t.unidadeOrigem || t.dados?.unidadeOrigem || t.instituicao || "") === instituicaoFiltro;
+                            const matchAno = anoFiltro === "Todos os Anos" || t.dataHora.includes(anoFiltro);
+                            const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                              const mesNum = mesNumero[mesFiltro];
+                              const parts = t.dataHora.split("/");
+                              return parts.length >= 2 && parts[1] === mesNum;
+                            })();
+                            const matchStatus = statusFiltro === "Todos os Status" || (t.status || "Pendente") === statusFiltro;
+                            return matchInstituicao && matchAno && matchMes && matchStatus;
+                          }).length === 0 && (
                             <tr><td colSpan={9} className="px-6 py-12 text-center text-[#aaa]">Nenhuma transferencia registrada.</td></tr>
                           )}
                         </tbody>
@@ -3607,35 +3917,237 @@ const getSidebarDescription = () => {
 
               {relatorioAbaAtiva === "inventarios" && (
                 <div className="space-y-4">
+                  {/* Filter bar */}
+                  <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden shadow-sm">
+                    <div className="px-5 py-3.5 border-b border-[#e5e5e5] flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-[#1a1a1a]">
+                          Relatorio de Inventarios ({(() => {
+                            const filterFunc = (inv: { dataHora: string; escola?: string; denominacao?: string; status?: string }) => {
+                              const escola = inv.escola || inv.denominacao || "";
+                              const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || escola === instituicaoFiltro;
+                              const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                              const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                                const mesNum = mesNumero[mesFiltro];
+                                const parts = inv.dataHora.split("/");
+                                return parts.length >= 2 && parts[1] === mesNum;
+                              })();
+                              const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                              return matchInstituicao && matchAno && matchMes && matchStatus;
+                            };
+                            return inventarios.filter(filterFunc).length + inventariosSetor.filter(filterFunc).length;
+                          })()} registros)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Select value={instituicaoFiltro} onValueChange={setInstituicaoFiltro}>
+                          <SelectTrigger className="w-48 h-8 text-xs border-[#e5e5e5] bg-white text-[#5a5a5a]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {instituicoes.map((inst) => (
+                              <SelectItem key={inst} value={inst}>{inst}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select value={mesFiltro} onValueChange={setMesFiltro}>
+                          <SelectTrigger className="w-40 h-8 text-xs border-[#e5e5e5] bg-white text-[#5a5a5a]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {meses.map((m) => (
+                              <SelectItem key={m} value={m}>{m}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select value={anoFiltro} onValueChange={setAnoFiltro}>
+                          <SelectTrigger className="w-36 h-8 text-xs border-[#e5e5e5] bg-white text-[#5a5a5a]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {anos.map((a) => (
+                              <SelectItem key={a} value={a}>{a}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select value={statusFiltro} onValueChange={setStatusFiltro}>
+                          <SelectTrigger className="w-40 h-8 text-xs border-[#e5e5e5] bg-white text-[#5a5a5a]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Todos os Status">Todos os Status</SelectItem>
+                            <SelectItem value="Pendente">Pendente</SelectItem>
+                            <SelectItem value="Em Analise">Em Analise</SelectItem>
+                            <SelectItem value="Finalizado">Finalizado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <button
+                          onClick={clearFilters}
+                          className="px-3 py-1.5 text-xs font-medium text-[#5a5a5a] border border-[#e5e5e5] rounded-lg hover:bg-[#f9f9f9] transition-colors"
+                        >
+                          Limpar
+                        </button>
+                        <button
+                          onClick={() => {
+                            const filterFunc = (inv: { dataHora: string; escola?: string; denominacao?: string; status?: string }) => {
+                              const escola = inv.escola || inv.denominacao || "";
+                              const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || escola === instituicaoFiltro;
+                              const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                              const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                                const mesNum = mesNumero[mesFiltro];
+                                const parts = inv.dataHora.split("/");
+                                return parts.length >= 2 && parts[1] === mesNum;
+                              })();
+                              const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                              return matchInstituicao && matchAno && matchMes && matchStatus;
+                            };
+                            const filteredInventarios = inventarios.filter(filterFunc);
+                            const filteredInventariosSetor = inventariosSetor.filter(filterFunc);
+                            const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+                            const pw = doc.internal.pageSize.getWidth();
+                            doc.setFontSize(14);
+                            doc.setFont("helvetica", "bold");
+                            doc.text("RELATORIO DE INVENTARIOS", pw / 2, 15, { align: "center" });
+                            doc.setFontSize(9);
+                            doc.setFont("helvetica", "normal");
+                            doc.text(`Gerado em: ${new Date().toLocaleString("pt-BR")} | Total: ${filteredInventarios.length + filteredInventariosSetor.length} inventarios`, pw / 2, 22, { align: "center" });
+                            let y = 35;
+                            doc.setFontSize(8);
+                            // Inventarios Gerais
+                            if (filteredInventarios.length > 0) {
+                              doc.setFont("helvetica", "bold");
+                              doc.text("INVENTARIOS GERAIS", 12, y);
+                              y += 6;
+                              doc.setFillColor(240, 240, 240);
+                              doc.rect(10, y - 4, pw - 20, 7, "F");
+                              doc.text("Data", 12, y);
+                              doc.text("Escola", 40, y);
+                              doc.text("Solicitante", 120, y);
+                              doc.text("Ano", 180, y);
+                              doc.text("Itens", 210, y);
+                              doc.text("Status", 240, y);
+                              y += 8;
+                              doc.setFont("helvetica", "normal");
+                              filteredInventarios.forEach((inv) => {
+                                if (y > 190) { doc.addPage(); y = 20; }
+                                doc.text(inv.dataHora.split(",")[0] || "-", 12, y);
+                                doc.text((inv.escola || "-").substring(0, 45), 40, y);
+                                doc.text((inv.solicitante || "-").substring(0, 30), 120, y);
+                                doc.text(inv.ano || "-", 180, y);
+                                doc.text(String(inv.itens?.length || 0), 210, y);
+                                doc.text(inv.status || "Pendente", 240, y);
+                                y += 6;
+                              });
+                              y += 10;
+                            }
+                            // Inventarios por Setor
+                            if (filteredInventariosSetor.length > 0) {
+                              if (y > 170) { doc.addPage(); y = 20; }
+                              doc.setFont("helvetica", "bold");
+                              doc.text("INVENTARIOS POR SETOR", 12, y);
+                              y += 6;
+                              doc.setFillColor(240, 240, 240);
+                              doc.rect(10, y - 4, pw - 20, 7, "F");
+                              doc.text("Data", 12, y);
+                              doc.text("Instituicao", 40, y);
+                              doc.text("Sala", 120, y);
+                              doc.text("Responsavel", 170, y);
+                              doc.text("Itens", 230, y);
+                              doc.text("Status", 255, y);
+                              y += 8;
+                              doc.setFont("helvetica", "normal");
+                              filteredInventariosSetor.forEach((inv) => {
+                                if (y > 190) { doc.addPage(); y = 20; }
+                                doc.text(inv.dataHora.split(",")[0] || "-", 12, y);
+                                doc.text((inv.denominacao || "-").substring(0, 45), 40, y);
+                                doc.text((inv.salaResponsavel || "-").substring(0, 25), 120, y);
+                                doc.text((inv.respNome || "-").substring(0, 30), 170, y);
+                                doc.text(String(inv.itens?.length || 0), 230, y);
+                                doc.text(inv.status || "Pendente", 255, y);
+                                y += 6;
+                              });
+                            }
+                            doc.save("relatorio_inventarios_completo.pdf");
+                          }}
+                          className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-[#111c44] hover:bg-[#0e1735] rounded-lg transition-colors shadow-sm"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          Baixar Relatorio Completo (PDF)
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Summary */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 shadow-sm">
-                      <p className="text-xs text-[#8c8c8c] font-medium uppercase tracking-wide">Total Inventarios</p>
-                      <p className="text-2xl font-bold text-[#1a1a1a] mt-1">{inventarios.length + inventariosSetor.length}</p>
-                    </div>
-                    <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 shadow-sm">
-                      <p className="text-xs text-[#8c8c8c] font-medium uppercase tracking-wide">Inventarios Gerais</p>
-                      <p className="text-2xl font-bold text-blue-600 mt-1">{inventarios.length}</p>
-                    </div>
-                    <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 shadow-sm">
-                      <p className="text-xs text-[#8c8c8c] font-medium uppercase tracking-wide">Inventarios por Setor</p>
-                      <p className="text-2xl font-bold text-purple-600 mt-1">{inventariosSetor.length}</p>
-                    </div>
-                    <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 shadow-sm">
-                      <p className="text-xs text-[#8c8c8c] font-medium uppercase tracking-wide">Finalizados</p>
-                      <p className="text-2xl font-bold text-green-600 mt-1">{inventarios.filter(i => i.status === "Finalizado").length + inventariosSetor.filter(i => i.status === "Finalizado").length}</p>
-                    </div>
+                    {(() => {
+                      const filterFunc = (inv: { dataHora: string; escola?: string; denominacao?: string; status?: string }) => {
+                        const escola = inv.escola || inv.denominacao || "";
+                        const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || escola === instituicaoFiltro;
+                        const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                        const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                          const mesNum = mesNumero[mesFiltro];
+                          const parts = inv.dataHora.split("/");
+                          return parts.length >= 2 && parts[1] === mesNum;
+                        })();
+                        const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                        return matchInstituicao && matchAno && matchMes && matchStatus;
+                      };
+                      const filteredInv = inventarios.filter(filterFunc);
+                      const filteredInvSetor = inventariosSetor.filter(filterFunc);
+                      return (
+                        <>
+                          <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 shadow-sm">
+                            <p className="text-xs text-[#8c8c8c] font-medium uppercase tracking-wide">Total Inventarios</p>
+                            <p className="text-2xl font-bold text-[#1a1a1a] mt-1">{filteredInv.length + filteredInvSetor.length}</p>
+                          </div>
+                          <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 shadow-sm">
+                            <p className="text-xs text-[#8c8c8c] font-medium uppercase tracking-wide">Inventarios Gerais</p>
+                            <p className="text-2xl font-bold text-blue-600 mt-1">{filteredInv.length}</p>
+                          </div>
+                          <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 shadow-sm">
+                            <p className="text-xs text-[#8c8c8c] font-medium uppercase tracking-wide">Inventarios por Setor</p>
+                            <p className="text-2xl font-bold text-purple-600 mt-1">{filteredInvSetor.length}</p>
+                          </div>
+                          <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 shadow-sm">
+                            <p className="text-xs text-[#8c8c8c] font-medium uppercase tracking-wide">Finalizados</p>
+                            <p className="text-2xl font-bold text-green-600 mt-1">{filteredInv.filter(i => i.status === "Finalizado").length + filteredInvSetor.filter(i => i.status === "Finalizado").length}</p>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
 
                   {/* Inventarios Gerais */}
                   <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden shadow-sm">
                     <div className="px-5 py-3.5 border-b border-[#e5e5e5] flex items-center justify-between">
                       <div>
-                        <span className="text-sm font-semibold text-[#1a1a1a]">Inventarios Gerais ({inventarios.length})</span>
+                        <span className="text-sm font-semibold text-[#1a1a1a]">Inventarios Gerais ({inventarios.filter((inv) => {
+                          const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || inv.escola === instituicaoFiltro;
+                          const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                          const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                            const mesNum = mesNumero[mesFiltro];
+                            const parts = inv.dataHora.split("/");
+                            return parts.length >= 2 && parts[1] === mesNum;
+                          })();
+                          const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                          return matchInstituicao && matchAno && matchMes && matchStatus;
+                        }).length})</span>
                         <p className="text-xs text-[#8c8c8c] mt-0.5">Arrolamento de bens patrimoniais por escola</p>
                       </div>
                       <button
                         onClick={() => {
+                          const filteredInventarios = inventarios.filter((inv) => {
+                            const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || inv.escola === instituicaoFiltro;
+                            const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                            const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                              const mesNum = mesNumero[mesFiltro];
+                              const parts = inv.dataHora.split("/");
+                              return parts.length >= 2 && parts[1] === mesNum;
+                            })();
+                            const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                            return matchInstituicao && matchAno && matchMes && matchStatus;
+                          });
                           const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
                           const pw = doc.internal.pageSize.getWidth();
                           doc.setFontSize(14);
@@ -3643,7 +4155,7 @@ const getSidebarDescription = () => {
                           doc.text("RELATORIO DE INVENTARIOS GERAIS", pw / 2, 15, { align: "center" });
                           doc.setFontSize(9);
                           doc.setFont("helvetica", "normal");
-                          doc.text(`Gerado em: ${new Date().toLocaleString("pt-BR")} | Total: ${inventarios.length} inventarios`, pw / 2, 22, { align: "center" });
+                          doc.text(`Gerado em: ${new Date().toLocaleString("pt-BR")} | Total: ${filteredInventarios.length} inventarios`, pw / 2, 22, { align: "center" });
                           let y = 35;
                           doc.setFontSize(8);
                           doc.setFillColor(240, 240, 240);
@@ -3658,7 +4170,7 @@ const getSidebarDescription = () => {
                           doc.text("Status", 260, y);
                           y += 8;
                           doc.setFont("helvetica", "normal");
-                          inventarios.forEach((inv) => {
+                          filteredInventarios.forEach((inv) => {
                             if (y > 190) { doc.addPage(); y = 20; }
                             doc.text(inv.dataHora.split(",")[0] || "-", 12, y);
                             doc.text((inv.escola || "-").substring(0, 45), 40, y);
@@ -3691,7 +4203,17 @@ const getSidebarDescription = () => {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-[#e5e5e5]">
-                          {inventarios.map((inv) => (
+                          {inventarios.filter((inv) => {
+                            const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || inv.escola === instituicaoFiltro;
+                            const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                            const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                              const mesNum = mesNumero[mesFiltro];
+                              const parts = inv.dataHora.split("/");
+                              return parts.length >= 2 && parts[1] === mesNum;
+                            })();
+                            const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                            return matchInstituicao && matchAno && matchMes && matchStatus;
+                          }).map((inv) => (
                             <tr key={inv.id} className="hover:bg-[#fafafa]">
                               <td className="px-4 py-3 text-[#666]">{inv.dataHora.split(",")[0]}</td>
                               <td className="px-4 py-3 font-medium text-[#1a1a1a]">{inv.escola}</td>
@@ -3702,7 +4224,17 @@ const getSidebarDescription = () => {
                               <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded text-xs ${inv.status === "Finalizado" ? "bg-green-100 text-green-700" : inv.status === "Em Analise" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700"}`}>{inv.status}</span></td>
                             </tr>
                           ))}
-                          {inventarios.length === 0 && (
+                          {inventarios.filter((inv) => {
+                            const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || inv.escola === instituicaoFiltro;
+                            const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                            const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                              const mesNum = mesNumero[mesFiltro];
+                              const parts = inv.dataHora.split("/");
+                              return parts.length >= 2 && parts[1] === mesNum;
+                            })();
+                            const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                            return matchInstituicao && matchAno && matchMes && matchStatus;
+                          }).length === 0 && (
                             <tr><td colSpan={7} className="px-6 py-12 text-center text-[#aaa]">Nenhum inventario geral registrado.</td></tr>
                           )}
                         </tbody>
@@ -3714,11 +4246,32 @@ const getSidebarDescription = () => {
                   <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden shadow-sm">
                     <div className="px-5 py-3.5 border-b border-[#e5e5e5] flex items-center justify-between">
                       <div>
-                        <span className="text-sm font-semibold text-[#1a1a1a]">Inventarios por Setor ({inventariosSetor.length})</span>
+                        <span className="text-sm font-semibold text-[#1a1a1a]">Inventarios por Setor ({inventariosSetor.filter((inv) => {
+                          const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || (inv.denominacao || "") === instituicaoFiltro;
+                          const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                          const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                            const mesNum = mesNumero[mesFiltro];
+                            const parts = inv.dataHora.split("/");
+                            return parts.length >= 2 && parts[1] === mesNum;
+                          })();
+                          const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                          return matchInstituicao && matchAno && matchMes && matchStatus;
+                        }).length})</span>
                         <p className="text-xs text-[#8c8c8c] mt-0.5">Inventarios enviados por setor/sala</p>
                       </div>
                       <button
                         onClick={() => {
+                          const filteredInventariosSetor = inventariosSetor.filter((inv) => {
+                            const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || (inv.denominacao || "") === instituicaoFiltro;
+                            const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                            const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                              const mesNum = mesNumero[mesFiltro];
+                              const parts = inv.dataHora.split("/");
+                              return parts.length >= 2 && parts[1] === mesNum;
+                            })();
+                            const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                            return matchInstituicao && matchAno && matchMes && matchStatus;
+                          });
                           const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
                           const pw = doc.internal.pageSize.getWidth();
                           doc.setFontSize(14);
@@ -3726,7 +4279,7 @@ const getSidebarDescription = () => {
                           doc.text("RELATORIO DE INVENTARIOS POR SETOR", pw / 2, 15, { align: "center" });
                           doc.setFontSize(9);
                           doc.setFont("helvetica", "normal");
-                          doc.text(`Gerado em: ${new Date().toLocaleString("pt-BR")} | Total: ${inventariosSetor.length} inventarios`, pw / 2, 22, { align: "center" });
+                          doc.text(`Gerado em: ${new Date().toLocaleString("pt-BR")} | Total: ${filteredInventariosSetor.length} inventarios`, pw / 2, 22, { align: "center" });
                           let y = 35;
                           doc.setFontSize(8);
                           doc.setFillColor(240, 240, 240);
@@ -3740,7 +4293,7 @@ const getSidebarDescription = () => {
                           doc.text("Status", 255, y);
                           y += 8;
                           doc.setFont("helvetica", "normal");
-                          inventariosSetor.forEach((inv) => {
+                          filteredInventariosSetor.forEach((inv) => {
                             if (y > 190) { doc.addPage(); y = 20; }
                             doc.text(inv.dataHora.split(",")[0] || "-", 12, y);
                             doc.text((inv.denominacao || "-").substring(0, 40), 40, y);
@@ -3772,7 +4325,17 @@ const getSidebarDescription = () => {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-[#e5e5e5]">
-                          {inventariosSetor.map((inv) => (
+                          {inventariosSetor.filter((inv) => {
+                            const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || (inv.denominacao || "") === instituicaoFiltro;
+                            const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                            const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                              const mesNum = mesNumero[mesFiltro];
+                              const parts = inv.dataHora.split("/");
+                              return parts.length >= 2 && parts[1] === mesNum;
+                            })();
+                            const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                            return matchInstituicao && matchAno && matchMes && matchStatus;
+                          }).map((inv) => (
                             <tr key={inv.id} className="hover:bg-[#fafafa]">
                               <td className="px-4 py-3 text-[#666]">{inv.dataHora.split(",")[0]}</td>
                               <td className="px-4 py-3 font-medium text-[#1a1a1a]">{inv.denominacao}</td>
@@ -3783,7 +4346,17 @@ const getSidebarDescription = () => {
                               <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded text-xs ${inv.status === "Finalizado" ? "bg-green-100 text-green-700" : inv.status === "Em Analise" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700"}`}>{inv.status}</span></td>
                             </tr>
                           ))}
-                          {inventariosSetor.length === 0 && (
+                          {inventariosSetor.filter((inv) => {
+                            const matchInstituicao = instituicaoFiltro === "Todas Instituicoes" || (inv.denominacao || "") === instituicaoFiltro;
+                            const matchAno = anoFiltro === "Todos os Anos" || inv.dataHora.includes(anoFiltro);
+                            const matchMes = mesFiltro === "Todos os Meses" || (() => {
+                              const mesNum = mesNumero[mesFiltro];
+                              const parts = inv.dataHora.split("/");
+                              return parts.length >= 2 && parts[1] === mesNum;
+                            })();
+                            const matchStatus = statusFiltro === "Todos os Status" || (inv.status || "Pendente") === statusFiltro;
+                            return matchInstituicao && matchAno && matchMes && matchStatus;
+                          }).length === 0 && (
                             <tr><td colSpan={7} className="px-6 py-12 text-center text-[#aaa]">Nenhum inventario por setor registrado.</td></tr>
                           )}
                         </tbody>
@@ -3794,7 +4367,13 @@ const getSidebarDescription = () => {
               )}
             </div>
 ) : activeSidebar === "dashboard" ? (
-  <AdminDashboard solicitacoes={solicitacoes} />
+  <AdminDashboard 
+    solicitacoes={solicitacoes} 
+    inventarios={inventarios}
+    inventariosSetor={inventariosSetor}
+    usuarios={usuarios}
+    instituicoes={instituicoes}
+  />
 ) : activeSidebar === "arrolamento" ? (
   /* ARROLAMENTO VIEW */
   <ArrolamentoView />
@@ -4241,7 +4820,7 @@ const getSidebarDescription = () => {
                     {/* Detalhes extras para transferencias */}
                     {isTransferencia && (
                       <div className="px-5 pb-3 pt-1">
-                        <div className="bg-sky-50 border border-sky-200 rounded-lg p-3 grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+                        <div className="bg-sky-50 border border-sky-200 rounded-lg p-3 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                           <div className="flex items-center gap-2">
                             <span className="text-sky-700 font-semibold">Origem:</span>
                             <span className="text-[#1a1a1a]">{solicitacao.unidadeOrigem || solicitacao.dados?.unidadeOrigem || solicitacao.instituicao || "-"}</span>
@@ -4251,12 +4830,16 @@ const getSidebarDescription = () => {
                             <span className="text-[#1a1a1a]">{solicitacao.unidadeDestino || solicitacao.dados?.unidadeDestino || "-"}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[#666] font-semibold">Responsavel Destino:</span>
-                            <span className="text-[#1a1a1a]">{solicitacao.responsavelDestino || solicitacao.dados?.responsavelDestino || "-"}</span>
+                            <span className="text-[#666] font-semibold">Data:</span>
+                            <span className="text-[#1a1a1a]">{solicitacao.dados?.data || solicitacao.dataHora.split(",")[0] || "-"}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[#666] font-semibold">Data:</span>
-                            <span className="text-[#1a1a1a]">{solicitacao.dados?.data || "-"}</span>
+                            <span className="text-sky-700 font-semibold">Resp. Origem:</span>
+                            <span className="text-[#1a1a1a]">{solicitacao.dados?.responsavelOrigem || solicitacao.nome || "-"}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-green-700 font-semibold">Resp. Destino:</span>
+                            <span className="text-[#1a1a1a]">{solicitacao.responsavelDestino || solicitacao.dados?.responsavelDestino || "-"}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-[#666] font-semibold">TMBP/PMS:</span>

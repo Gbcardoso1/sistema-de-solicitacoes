@@ -82,7 +82,7 @@ export default function UniformesPage() {
     setPdfBaixado(false);
   };
 
-  const handleBaixarPDF = () => { gerarComprovantePDF(getDadosComprovante()); setPdfBaixado(true); };
+  const handleBaixarPDF = async () => { await gerarComprovantePDF(getDadosComprovante()); setPdfBaixado(true); };
 
   const handleConfirmarEnvio = () => {
     addSolicitacao({

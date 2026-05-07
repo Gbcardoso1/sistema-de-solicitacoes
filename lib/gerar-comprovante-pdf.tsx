@@ -42,7 +42,7 @@ const tipoLabels: Record<string, string> = {
   kits: "Kits",
 };
 
-export function gerarComprovantePDF(dados: DadosComprovante) {
+export async function gerarComprovantePDF(dados: DadosComprovante) {
   const tipoLabel = tipoLabels[dados.tipo] || dados.tipo;
   const totalItens = dados.itens.reduce((acc, item) => acc + item.quantidade, 0);
 
@@ -52,21 +52,42 @@ export function gerarComprovantePDF(dados: DadosComprovante) {
   const contentWidth = pageWidth - margin * 2;
   let y = 0;
 
-  // --- Header ---
-  doc.setFillColor(13, 59, 140);
-  doc.rect(0, 0, pageWidth, 32, "F");
+  // --- Header with logo ---
+  try {
+    const logoImg = new Image();
+    logoImg.crossOrigin = "anonymous";
+    await new Promise<void>((resolve, reject) => {
+      logoImg.onload = () => resolve();
+      logoImg.onerror = () => reject();
+      logoImg.src = "/logo-prefeitura.png";
+    });
+    const canvas = document.createElement("canvas");
+    canvas.width = logoImg.width;
+    canvas.height = logoImg.height;
+    const ctx = canvas.getContext("2d");
+    ctx?.drawImage(logoImg, 0, 0);
+    const logoDataUrl = canvas.toDataURL("image/png");
+    const logoWidth = 70;
+    const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
+    doc.addImage(logoDataUrl, "PNG", (pageWidth - logoWidth) / 2, 8, logoWidth, logoHeight);
+    y = 8 + logoHeight + 6;
+  } catch {
+    // Fallback to text header if logo fails
+    doc.setFillColor(13, 59, 140);
+    doc.rect(0, 0, pageWidth, 32, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(255, 255, 255);
+    doc.text("PREFEITURA MUNICIPAL DE SAQUAREMA", pageWidth / 2, 15, { align: "center" });
+    y = 42;
+  }
 
+  // Subtitle
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.setTextColor(255, 255, 255);
-  doc.text("COMPROVANTE DE SOLICITACAO", pageWidth / 2, 15, { align: "center" });
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  doc.setTextColor(180, 200, 230);
-  doc.text(tipoLabel, pageWidth / 2, 24, { align: "center" });
-
-  y = 42;
+  doc.setFontSize(12);
+  doc.setTextColor(13, 59, 140);
+  doc.text("COMPROVANTE DE SOLICITACAO - " + tipoLabel.toUpperCase(), pageWidth / 2, y, { align: "center" });
+  y += 10;
 
   // --- Dados do Solicitante ---
   doc.setFont("helvetica", "bold");
@@ -209,7 +230,7 @@ export function gerarComprovantePDF(dados: DadosComprovante) {
   doc.save(fileName);
 }
 
-export function gerarPDFTransferencia(dados: DadosTransferencia) {
+export async function gerarPDFTransferencia(dados: DadosTransferencia) {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 15;
@@ -218,23 +239,46 @@ export function gerarPDFTransferencia(dados: DadosTransferencia) {
 
   const itensFiltrados = dados.itens.filter(i => i.descricaoItem);
 
-  // --- Header ---
-  doc.setFillColor(13, 59, 140);
-  doc.rect(0, 0, pageWidth, 38, "F");
+  // --- Header with logo ---
+  try {
+    const logoImg = new Image();
+    logoImg.crossOrigin = "anonymous";
+    await new Promise<void>((resolve, reject) => {
+      logoImg.onload = () => resolve();
+      logoImg.onerror = () => reject();
+      logoImg.src = "/logo-prefeitura.png";
+    });
+    const canvas = document.createElement("canvas");
+    canvas.width = logoImg.width;
+    canvas.height = logoImg.height;
+    const ctx = canvas.getContext("2d");
+    ctx?.drawImage(logoImg, 0, 0);
+    const logoDataUrl = canvas.toDataURL("image/png");
+    const logoWidth = 70;
+    const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
+    doc.addImage(logoDataUrl, "PNG", (pageWidth - logoWidth) / 2, 8, logoWidth, logoHeight);
+    y = 8 + logoHeight + 6;
+  } catch {
+    // Fallback to text header if logo fails
+    doc.setFillColor(13, 59, 140);
+    doc.rect(0, 0, pageWidth, 38, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(255, 255, 255);
+    doc.text("PREFEITURA MUNICIPAL DE SAQUAREMA", pageWidth / 2, 17, { align: "center" });
+    y = 48;
+  }
 
+  // Subtitle
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.setTextColor(255, 255, 255);
-  doc.text("TERMO DE TRANSFERENCIA DE BENS", pageWidth / 2, 16, { align: "center" });
-
+  doc.setFontSize(12);
+  doc.setTextColor(13, 59, 140);
+  doc.text("TERMO DE TRANSFERENCIA DE BENS", pageWidth / 2, y, { align: "center" });
+  y += 6;
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  doc.setTextColor(180, 200, 230);
-  doc.text("Prefeitura Municipal de Saquarema", pageWidth / 2, 26, { align: "center" });
   doc.setFontSize(9);
-  doc.text("Secretaria de Patrimonio", pageWidth / 2, 33, { align: "center" });
-
-  y = 48;
+  doc.text("Secretaria de Patrimonio", pageWidth / 2, y, { align: "center" });
+  y += 10;
 
   // --- Informacoes do Documento ---
   doc.setFillColor(243, 244, 246);
