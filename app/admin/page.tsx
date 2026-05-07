@@ -4820,7 +4820,7 @@ const getSidebarDescription = () => {
                     {/* Detalhes extras para transferencias */}
                     {isTransferencia && (
                       <div className="px-5 pb-3 pt-1">
-                        <div className="bg-sky-50 border border-sky-200 rounded-lg p-3 grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+                        <div className="bg-sky-50 border border-sky-200 rounded-lg p-3 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                           <div className="flex items-center gap-2">
                             <span className="text-sky-700 font-semibold">Origem:</span>
                             <span className="text-[#1a1a1a]">{solicitacao.unidadeOrigem || solicitacao.dados?.unidadeOrigem || solicitacao.instituicao || "-"}</span>
@@ -4830,12 +4830,16 @@ const getSidebarDescription = () => {
                             <span className="text-[#1a1a1a]">{solicitacao.unidadeDestino || solicitacao.dados?.unidadeDestino || "-"}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[#666] font-semibold">Responsavel Destino:</span>
-                            <span className="text-[#1a1a1a]">{solicitacao.responsavelDestino || solicitacao.dados?.responsavelDestino || "-"}</span>
+                            <span className="text-[#666] font-semibold">Data:</span>
+                            <span className="text-[#1a1a1a]">{solicitacao.dados?.data || solicitacao.dataHora.split(",")[0] || "-"}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[#666] font-semibold">Data:</span>
-                            <span className="text-[#1a1a1a]">{solicitacao.dados?.data || "-"}</span>
+                            <span className="text-sky-700 font-semibold">Resp. Origem:</span>
+                            <span className="text-[#1a1a1a]">{solicitacao.dados?.responsavelOrigem || solicitacao.nome || "-"}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-green-700 font-semibold">Resp. Destino:</span>
+                            <span className="text-[#1a1a1a]">{solicitacao.responsavelDestino || solicitacao.dados?.responsavelDestino || "-"}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-[#666] font-semibold">TMBP/PMS:</span>
