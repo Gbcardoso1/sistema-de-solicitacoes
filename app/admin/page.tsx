@@ -1816,20 +1816,50 @@ export default function AdminPage() {
     setDialogOpen(true);
   };
 
-  const handleBaixarPDF = (solicitacao: Solicitacao) => {
+  const handleBaixarPDF = async (solicitacao: Solicitacao) => {
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const pw = doc.internal.pageSize.getWidth();
     const m = 15;
     const cw = pw - m * 2;
     let y = 0;
 
-    doc.setFillColor(17, 28, 68);
-    doc.rect(0, 0, pw, 28, "F");
+    // Add logo image
+    try {
+      const logoImg = new Image();
+      logoImg.crossOrigin = "anonymous";
+      await new Promise<void>((resolve, reject) => {
+        logoImg.onload = () => resolve();
+        logoImg.onerror = () => reject();
+        logoImg.src = "/logo-prefeitura.png";
+      });
+      const canvas = document.createElement("canvas");
+      canvas.width = logoImg.width;
+      canvas.height = logoImg.height;
+      const ctx = canvas.getContext("2d");
+      ctx?.drawImage(logoImg, 0, 0);
+      const logoDataUrl = canvas.toDataURL("image/png");
+      // Logo centered at top - scaled to fit width nicely
+      const logoWidth = 80;
+      const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
+      doc.addImage(logoDataUrl, "PNG", (pw - logoWidth) / 2, 8, logoWidth, logoHeight);
+      y = 8 + logoHeight + 8;
+    } catch {
+      // Fallback to text header if logo fails
+      doc.setFillColor(17, 28, 68);
+      doc.rect(0, 0, pw, 28, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.setTextColor(255, 255, 255);
+      doc.text("PREFEITURA MUNICIPAL DE SAQUAREMA", pw / 2, 17, { align: "center" });
+      y = 38;
+    }
+    
+    // Tipo de solicitacao subtitle
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.setTextColor(255, 255, 255);
-    doc.text("SOLICITACAO - " + solicitacao.tipo.toUpperCase(), pw / 2, 17, { align: "center" });
-    y = 38;
+    doc.setFontSize(12);
+    doc.setTextColor(17, 28, 68);
+    doc.text("SOLICITACAO DE " + solicitacao.tipo.toUpperCase(), pw / 2, y, { align: "center" });
+    y += 10;
 
     // Declaration text for patrimonio requests
     if (solicitacao.tipo === "patrimonio") {

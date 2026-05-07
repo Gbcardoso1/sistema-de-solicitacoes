@@ -75,7 +75,7 @@ export default function TransferenciaPage() {
     setPdfBaixado(false);
   };
 
-  const handleBaixarPDF = () => { gerarPDFTransferencia(getDadosTransferencia()); setPdfBaixado(true); };
+  const handleBaixarPDF = async () => { await gerarPDFTransferencia(getDadosTransferencia()); setPdfBaixado(true); };
 
   const handleConfirmarEnvio = () => {
     addSolicitacao({
