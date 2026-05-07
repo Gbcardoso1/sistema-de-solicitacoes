@@ -1953,6 +1953,28 @@ export default function AdminPage() {
     if (solicitacao.mochilasDetalhes?.length) addSecao("MOCHILAS", solicitacao.mochilasDetalhes.map((mo) => ({ desc: mo.tipo, qtd: mo.quantidade })));
     if (solicitacao.papelaria?.length) addSecao("PAPELARIA", solicitacao.papelaria.map((p) => ({ desc: p.tipo, qtd: p.quantidade })));
     if (solicitacao.cozinha?.length) addSecao("COZINHA", solicitacao.cozinha.map((c) => ({ desc: c.tipo, qtd: c.quantidade })));
+    // Transferencia - usar funcao especifica do gerar-comprovante-pdf
+    if (solicitacao.tipo === "transferencia") {
+      const { gerarPDFTransferencia } = await import("@/lib/gerar-comprovante-pdf");
+      const itensTransf = (solicitacao.itensTransferencia || solicitacao.dados?.itens || []) as { numeroPatrimonio?: string; descricaoItem?: string }[];
+      await gerarPDFTransferencia({
+        tmbpPms: solicitacao.tmbpPms || (solicitacao.dados?.tmbpPms as string) || "",
+        data: solicitacao.dataHora.split(",")[0] || new Date().toLocaleDateString("pt-BR"),
+        situacao: `${solicitacao.situacao || (solicitacao.dados?.situacao as string) || ""} / ${solicitacao.condicao || (solicitacao.dados?.condicao as string) || ""}`.trim().replace(/^\s*\/\s*$|^\s*\/\s*|\s*\/\s*$/g, ""),
+        unidadeOrigem: solicitacao.unidadeOrigem || (solicitacao.dados?.unidadeOrigem as string) || solicitacao.instituicao || "",
+        responsavelOrigem: (solicitacao.dados?.responsavelOrigem as string) || solicitacao.nome || "",
+        matriculaOrigem: solicitacao.matricula || "",
+        unidadeDestino: solicitacao.unidadeDestino || (solicitacao.dados?.unidadeDestino as string) || "",
+        responsavelDestino: solicitacao.responsavelDestino || (solicitacao.dados?.responsavelDestino as string) || "",
+        matriculaDestino: solicitacao.matriculaDestino || (solicitacao.dados?.matriculaDestino as string) || "",
+        itens: itensTransf.map((it) => ({
+          numeroPatrimonio: it.numeroPatrimonio || "",
+          descricaoItem: it.descricaoItem || ""
+        }))
+      });
+      return;
+    }
+
     if (solicitacao.itens?.length && solicitacao.tipo === "patrimonio") {
       // Expandir itens individuais com lacres
       const itensExpandidos: { desc: string; qtd: number }[] = [];
@@ -3034,6 +3056,171 @@ const getSidebarDescription = () => {
                           className="h-7 text-xs border-[#e5e5e5]"
                         >
                           <Eye className="w-3 h-3 mr-1" /> Ver
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            // Gerar PDF do inventario por setor
+                            const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+                            const pw = doc.internal.pageSize.getWidth();
+                            const ph = doc.internal.pageSize.getHeight();
+                            const m = 10;
+                            const cw = pw - m * 2;
+                            const anoAtual = new Date().getFullYear();
+
+                            const gerarPaginaSetor = (itensPage: typeof inv.itens, pageNum: number, isFirst: boolean) => {
+                              let y = 8;
+                              
+                              doc.setFont("helvetica", "bold");
+                              doc.setFontSize(9);
+                              doc.setTextColor(0, 0, 0);
+                              doc.text("Estado do Rio de Janeiro", pw / 2, y, { align: "center" });
+                              y += 4;
+                              doc.text("PREFEITURA MUNICIPAL DE SAQUAREMA", pw / 2, y, { align: "center" });
+                              y += 4;
+                              doc.setFont("helvetica", "normal");
+                              doc.setFontSize(8);
+                              doc.text("Secretaria de Patrimonio", pw / 2, y, { align: "center" });
+                              y += 6;
+
+                              if (isFirst) {
+                                doc.setDrawColor(0, 0, 0);
+                                doc.setLineWidth(0.3);
+                                doc.rect(m, y, cw, 10);
+                                doc.setFont("helvetica", "bold");
+                                doc.setFontSize(8);
+                                doc.text("Secretaria + Orgao Responsavel:", m + 2, y + 4);
+                                doc.setFont("helvetica", "normal");
+                                doc.text(inv.secretaria.toUpperCase(), m + 2, y + 8);
+                                y += 10;
+
+                                doc.rect(m, y, cw, 10);
+                                doc.setFont("helvetica", "bold");
+                                doc.text("Denominacao do Imovel + Setor de Responsabilidade:", m + 2, y + 4);
+                                doc.setFont("helvetica", "normal");
+                                doc.text(inv.denominacao.toUpperCase(), m + 2, y + 8);
+                                y += 10;
+
+                                doc.rect(m, y, cw, 10);
+                                doc.setFont("helvetica", "bold");
+                                doc.text("Endereco (Rua, n, complemento, bairro):", m + 2, y + 4);
+                                doc.setFont("helvetica", "normal");
+                                doc.text(inv.endereco.toUpperCase(), m + 2, y + 8);
+                                y += 10;
+
+                                doc.rect(m, y, cw, 14);
+                                doc.setFont("helvetica", "bold");
+                                doc.setFontSize(7);
+                                doc.text("Responsavel pelo Orgao", m + cw / 2, y + 3, { align: "center" });
+                                doc.line(m, y + 5, pw - m, y + 5);
+                                doc.setFont("helvetica", "normal");
+                                doc.text("Nome:", m + 2, y + 9);
+                                doc.text(inv.respNome.toUpperCase(), m + 15, y + 9);
+                                doc.text("CPF:", m + cw / 2, y + 9);
+                                doc.text(inv.respCPF, m + cw / 2 + 12, y + 9);
+                                doc.text("Matricula:", m + cw * 0.75, y + 9);
+                                doc.text(inv.respMatricula, m + cw * 0.75 + 18, y + 9);
+                                y += 14;
+
+                                doc.rect(m, y, cw, 14);
+                                doc.setFont("helvetica", "bold");
+                                doc.text("Agente Patrimonial", m + cw / 2, y + 3, { align: "center" });
+                                doc.line(m, y + 5, pw - m, y + 5);
+                                doc.setFont("helvetica", "normal");
+                                doc.text("Nome:", m + 2, y + 9);
+                                doc.text(inv.agenteNome.toUpperCase(), m + 15, y + 9);
+                                doc.text("CPF:", m + cw / 2, y + 9);
+                                doc.text(inv.agenteCPF, m + cw / 2 + 12, y + 9);
+                                doc.text("Matricula:", m + cw * 0.75, y + 9);
+                                doc.text(inv.agenteMatricula, m + cw * 0.75 + 18, y + 9);
+                                y += 14;
+
+                                doc.rect(m, y, cw, 28);
+                                doc.setFont("helvetica", "bold");
+                                doc.setFontSize(8);
+                                doc.text("TERMO DE RESPONSABILIDADE", m + cw / 2, y + 5, { align: "center" });
+                                doc.setFont("helvetica", "normal");
+                                doc.setFontSize(6);
+                                const termoText = "Na qualidade de responsavel, comprometo-me pela guarda dos bens arrolados descritos na(s) folha(s) anexa(s) numerada(s), obrigando-me a responder pela posse, sujeitando-me a responder perante a Municipalidade em caso de extravio ou semelhante, a zelar pela sua conservacao, bem como, informar ao orgao gestor responsavel pelo Patrimonio Municipal toda e qualquer movimentacao/ocorrencia ou baixa dos respectivos bens.";
+                                doc.text(termoText, m + 2, y + 10, { maxWidth: cw - 4 });
+                                y += 28;
+
+                                doc.setFontSize(6);
+                                doc.text("(Utilize tantas relacoes conforme o necessario para enumerar todos os Bens)", m + cw / 2, y + 4, { align: "center" });
+                                y += 6;
+                              } else {
+                                doc.setFont("helvetica", "bold");
+                                doc.setFontSize(8);
+                                doc.text("Denominacao do Imovel:", m, y);
+                                y += 4;
+                                doc.setFont("helvetica", "normal");
+                                doc.text(inv.denominacao.toUpperCase(), m, y);
+                                y += 6;
+                              }
+
+                              const colW = cw / 4;
+                              doc.setDrawColor(0, 0, 0);
+                              doc.setLineWidth(0.3);
+                              doc.rect(m, y, cw, 6);
+                              doc.setFont("helvetica", "bold");
+                              doc.setFontSize(7);
+                              doc.text("Codigo Bem", m + 2, y + 4);
+                              doc.text("Descricao Generica", m + colW, y + 4);
+                              doc.text("Codigo Bem", m + colW * 2, y + 4);
+                              doc.text("Descricao Generica", m + colW * 3, y + 4);
+                              doc.line(m + colW, y, m + colW, y + 6);
+                              doc.line(m + colW * 2, y, m + colW * 2, y + 6);
+                              doc.line(m + colW * 3, y, m + colW * 3, y + 6);
+                              y += 6;
+
+                              doc.setFont("helvetica", "normal");
+                              doc.setFontSize(7);
+                              const rowHeight = 6;
+                              const maxRows = isFirst ? 10 : 20;
+
+                              for (let i = 0; i < maxRows; i++) {
+                                doc.rect(m, y, cw, rowHeight);
+                                doc.line(m + colW, y, m + colW, y + rowHeight);
+                                doc.line(m + colW * 2, y, m + colW * 2, y + rowHeight);
+                                doc.line(m + colW * 3, y, m + colW * 3, y + rowHeight);
+                                const leftIdx = i * 2;
+                                const rightIdx = i * 2 + 1;
+                                if (itensPage[leftIdx]) {
+                                  doc.text(itensPage[leftIdx].codigo || "", m + 2, y + 4);
+                                  doc.text(itensPage[leftIdx].descricao.substring(0, 25), m + colW + 2, y + 4);
+                                }
+                                if (itensPage[rightIdx]) {
+                                  doc.text(itensPage[rightIdx].codigo || "", m + colW * 2 + 2, y + 4);
+                                  doc.text(itensPage[rightIdx].descricao.substring(0, 25), m + colW * 3 + 2, y + 4);
+                                }
+                                y += rowHeight;
+                              }
+
+                              doc.setFontSize(6);
+                              doc.text("Rua Coronel Madureira, 77 - Centro - Saquarema - RJ - CEP: 28990-756", pw / 2, ph - 10, { align: "center" });
+                            };
+
+                            const itensPerFirstPage = 20;
+                            const itensPerPage = 40;
+                            gerarPaginaSetor(inv.itens.slice(0, itensPerFirstPage), 1, true);
+
+                            if (inv.itens.length > itensPerFirstPage) {
+                              let remaining = inv.itens.slice(itensPerFirstPage);
+                              let pageNum = 2;
+                              while (remaining.length > 0) {
+                                doc.addPage();
+                                gerarPaginaSetor(remaining.slice(0, itensPerPage), pageNum, false);
+                                remaining = remaining.slice(itensPerPage);
+                                pageNum++;
+                              }
+                            }
+
+                            doc.save(`Inventario_Setor_${inv.denominacao.replace(/\s+/g, "_").substring(0, 30)}_${anoAtual}.pdf`);
+                          }}
+                          className="h-7 text-xs border-[#e5e5e5]"
+                        >
+                          <Download className="w-3 h-3 mr-1" /> PDF
                         </Button>
                       </div>
                     </div>

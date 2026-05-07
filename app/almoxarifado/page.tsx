@@ -493,6 +493,79 @@ export default function AlmoxarifadoPage() {
           </Button>
         </div>
       </div>
+
+      {/* Modal de Confirmacao */}
+      {modalAberto && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#e5e7eb]">
+              <div>
+                <h2 className="text-base font-bold text-[#1e293b]">Resumo da Solicitacao</h2>
+                <p className="text-xs text-[#6b7280]">Verifique os dados da sua solicitacao abaixo</p>
+              </div>
+              <button onClick={() => setModalAberto(false)} className="text-[#9ca3af] hover:text-[#374151] transition-colors" aria-label="Fechar"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="px-5 py-4 space-y-4">
+              <div>
+                <h3 className="text-sm font-bold text-[#1e293b] mb-2">Dados do Solicitante</h3>
+                <div className="space-y-1 text-sm text-[#374151]">
+                  <p><span className="font-medium">Nome:</span> {nome}</p>
+                  <p><span className="font-medium">Matricula:</span> {matricula}</p>
+                  <p><span className="font-medium">Instituicao:</span> {instituicao}</p>
+                  <p><span className="font-medium">N. Solicitacao:</span> {numeroSolicitacao}</p>
+                </div>
+              </div>
+              {itensFiltradosPapelaria.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-bold text-[#1e293b] mb-2">Papelaria</h3>
+                  <div className="space-y-1.5">
+                    {itensFiltradosPapelaria.map((item, i) => (
+                      <div key={item.id} className="bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-3 py-2 text-sm text-[#374151]">
+                        <p>{item.tipo} - Quantidade: {item.quantidade}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {itensFiltradosCozinha.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-bold text-[#1e293b] mb-2">Cozinha</h3>
+                  <div className="space-y-1.5">
+                    {itensFiltradosCozinha.map((item, i) => (
+                      <div key={item.id} className="bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-3 py-2 text-sm text-[#374151]">
+                        <p>{item.tipo} - Quantidade: {item.quantidade}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {itensFiltradosCreche.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-bold text-[#1e293b] mb-2">Creche</h3>
+                  <div className="space-y-1.5">
+                    {itensFiltradosCreche.map((item, i) => (
+                      <div key={item.id} className="bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-3 py-2 text-sm text-[#374151]">
+                        <p>{item.tipo} - Quantidade: {item.quantidade}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="px-5 py-4 border-t border-[#e5e7eb] space-y-3">
+              <div className="bg-[#fef9c3] border border-[#d4a017] rounded-lg p-3 flex items-start gap-2.5">
+                <AlertTriangle className="w-4 h-4 text-[#d4a017] shrink-0 mt-0.5" />
+                <p className="text-sm text-[#92400e] font-medium">{"E necessario baixar o PDF antes de confirmar o envio."}</p>
+              </div>
+              <div className="flex items-center justify-center gap-3">
+                <Button variant="outline" onClick={() => setModalAberto(false)} className="px-6 h-10 text-sm font-medium border-[#d1d5db] text-[#374151] bg-white hover:bg-[#f3f4f6]">Voltar</Button>
+                <Button onClick={handleBaixarPDF} className="px-6 h-10 text-sm font-medium bg-[#16a34a] hover:bg-[#15803d] text-white"><Download className="w-4 h-4 mr-2" /> Baixar PDF</Button>
+                <Button onClick={handleConfirmarEnvio} disabled={!pdfBaixado} className={`px-6 h-10 text-sm font-medium text-white disabled:opacity-60 disabled:cursor-not-allowed ${pdfBaixado ? "bg-[#111c44] hover:bg-[#0e1735]" : "bg-[#6b7280] hover:bg-[#4b5563]"}`}>Confirmar Envio</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
