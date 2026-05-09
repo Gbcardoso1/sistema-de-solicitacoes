@@ -2711,13 +2711,16 @@ const getSidebarDescription = () => {
   })}
   </nav>
         <div className="px-2 py-3 border-t border-white/10">
-          <Link
-            href="/"
+          <button
+            onClick={async () => {
+              await fetch("/api/auth/logout", { method: "POST" });
+              window.location.href = "/login";
+            }}
             className={`flex items-center ${sidebarCollapsed ? "justify-center" : "gap-3"} px-3 py-2.5 rounded-lg text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-colors w-full`}
           >
             <LogOut className="w-[18px] h-[18px] shrink-0" />
             {!sidebarCollapsed && <span>Sair</span>}
-          </Link>
+          </button>
         </div>
       </aside>
 
