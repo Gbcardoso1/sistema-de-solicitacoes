@@ -67,11 +67,23 @@ export default function HomePage() {
   const [loginErro, setLoginErro] = useState("");
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
-  const handleLogin = () => {
-    if (loginUsuario === "patrimonio" && loginSenha === "#cmpp123") {
-      router.push("/admin");
-    } else {
-      setLoginErro("Usuario ou senha incorretos");
+  const handleLogin = async () => {
+    setLoginErro("");
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ login: loginUsuario, senha: loginSenha }),
+      });
+
+      if (res.ok) {
+        router.push("/admin");
+      } else {
+        const data = await res.json();
+        setLoginErro(data.erro || "Usuario ou senha incorretos");
+      }
+    } catch {
+      setLoginErro("Erro ao conectar. Tente novamente.");
     }
   };
 
