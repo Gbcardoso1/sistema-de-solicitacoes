@@ -66,12 +66,30 @@ export default function HomePage() {
   const [loginSenha, setLoginSenha] = useState("");
   const [loginErro, setLoginErro] = useState("");
   const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
-    if (loginUsuario === "patrimonio" && loginSenha === "#cmpp123") {
-      router.push("/admin");
-    } else {
-      setLoginErro("Usuario ou senha incorretos");
+  const handleLogin = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    setLoginErro("");
+
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ login: loginUsuario, senha: loginSenha }),
+      });
+
+      if (response.ok) {
+        router.push("/admin");
+        router.refresh();
+      } else {
+        setLoginErro("Usuario ou senha incorretos");
+      }
+    } catch {
+      setLoginErro("Erro ao fazer login. Tente novamente.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -182,8 +200,8 @@ export default function HomePage() {
         <div className="container mx-auto px-4 py-5 lg:py-6">
           <div className="max-w-6xl mx-auto">
             {/* Welcome Section */}
-            <div className="mb-20 lg:mb-10 text-left">
-              <div className="flex items-left justify-left gap-2 mb-2">
+            <div className="mb-4 lg:mb-7 text-left">
+              <div className="flex items-left justify-left gap-2 mb-1">
                 <div className="w-1 h-7 bg-[#0fb992] rounded-full"></div>
                 <h1 className="text-3xl lg:text-2xl font-bold text-[#1a1a4e]">Bem-vindo!</h1>
               </div>
@@ -337,9 +355,10 @@ export default function HomePage() {
                 </Button>
                 <Button
                   onClick={handleLogin}
-                  className="flex-1 h-11 bg-[#1a1a4e] hover:bg-[#252566] text-white font-semibold transition-all duration-300 hover:shadow-lg"
+                  disabled={isLoading}
+                  className="flex-1 h-11 bg-[#1a1a4e] hover:bg-[#252566] text-white font-semibold transition-all duration-300 hover:shadow-lg disabled:opacity-50"
                 >
-                  Acessar
+                  {isLoading ? "Entrando..." : "Acessar"}
                 </Button>
               </div>
             </div>
