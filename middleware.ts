@@ -17,18 +17,8 @@ export function middleware(request: NextRequest) {
     const sessionToken = request.cookies.get("admin_session");
 
     if (!sessionToken || sessionToken.value !== "authenticated") {
-      // Redireciona para a pagina de login
-      const loginUrl = new URL("/login", request.url);
-      loginUrl.searchParams.set("redirect", pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-  }
-
-  // Se o usuario ja esta logado e tenta acessar /login, redireciona para /admin
-  if (pathname === "/login") {
-    const sessionToken = request.cookies.get("admin_session");
-    if (sessionToken && sessionToken.value === "authenticated") {
-      return NextResponse.redirect(new URL("/admin", request.url));
+      // Redireciona para a pagina inicial (onde tem o modal de login)
+      return NextResponse.redirect(new URL("/", request.url));
     }
   }
 
@@ -36,5 +26,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/login"],
+  matcher: ["/admin/:path*"],
 };

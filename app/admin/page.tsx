@@ -1708,11 +1708,11 @@ export default function AdminPage() {
   const handleLogout = async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
-      router.push("/login");
+      router.push("/");
       router.refresh();
     } catch {
       // Em caso de erro, redireciona mesmo assim
-      router.push("/login");
+      router.push("/");
     }
   };
 

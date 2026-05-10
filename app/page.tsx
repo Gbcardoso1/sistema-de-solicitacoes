@@ -66,12 +66,30 @@ export default function HomePage() {
   const [loginSenha, setLoginSenha] = useState("");
   const [loginErro, setLoginErro] = useState("");
   const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
-    if (loginUsuario === "patrimonio" && loginSenha === "#cmpp123") {
-      router.push("/admin");
-    } else {
-      setLoginErro("Usuario ou senha incorretos");
+  const handleLogin = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    setLoginErro("");
+
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ login: loginUsuario, senha: loginSenha }),
+      });
+
+      if (response.ok) {
+        router.push("/admin");
+        router.refresh();
+      } else {
+        setLoginErro("Usuario ou senha incorretos");
+      }
+    } catch {
+      setLoginErro("Erro ao fazer login. Tente novamente.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -337,9 +355,10 @@ export default function HomePage() {
                 </Button>
                 <Button
                   onClick={handleLogin}
-                  className="flex-1 h-11 bg-[#1a1a4e] hover:bg-[#252566] text-white font-semibold transition-all duration-300 hover:shadow-lg"
+                  disabled={isLoading}
+                  className="flex-1 h-11 bg-[#1a1a4e] hover:bg-[#252566] text-white font-semibold transition-all duration-300 hover:shadow-lg disabled:opacity-50"
                 >
-                  Acessar
+                  {isLoading ? "Entrando..." : "Acessar"}
                 </Button>
               </div>
             </div>
