@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   FileText,
   Eye,
@@ -1701,6 +1701,21 @@ export default function AdminPage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
+  // Router para navegacao
+  const router = useRouter();
+
+  // Funcao de logout
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.push("/login");
+      router.refresh();
+    } catch {
+      // Em caso de erro, redireciona mesmo assim
+      router.push("/login");
+    }
+  };
+
   // Estado para itens do catalogo - atualizado quando aba "itens" e selecionada
   const [itensCatalogoCache, setItensCatalogoCache] = useState<Record<string, ReturnType<typeof getItensAtivos>>>({});
   useEffect(() => {
@@ -2711,13 +2726,13 @@ const getSidebarDescription = () => {
   })}
   </nav>
         <div className="px-2 py-3 border-t border-white/10">
-          <Link
-            href="/"
+          <button
+            onClick={handleLogout}
             className={`flex items-center ${sidebarCollapsed ? "justify-center" : "gap-3"} px-3 py-2.5 rounded-lg text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-colors w-full`}
           >
             <LogOut className="w-[18px] h-[18px] shrink-0" />
             {!sidebarCollapsed && <span>Sair</span>}
-          </Link>
+          </button>
         </div>
       </aside>
 

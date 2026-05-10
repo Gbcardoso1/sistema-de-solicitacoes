@@ -1,23 +1,43 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Armchair, ArrowLeft, Eye, EyeOff } from "lucide-react";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [login, setLogin] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
-    if (login === "patrimonio" && senha === "#cmpp123") {
-      router.push("/admin");
-    } else {
-      setErro("Usuario ou senha incorretos");
+  const handleLogin = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    setErro("");
+
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ login, senha }),
+      });
+
+      if (response.ok) {
+        const redirect = searchParams.get("redirect") || "/admin";
+        router.push(redirect);
+        router.refresh();
+      } else {
+        setErro("Usuario ou senha incorretos");
+      }
+    } catch {
+      setErro("Erro ao fazer login. Tente novamente.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -83,9 +103,10 @@ export default function LoginPage() {
 
             <Button
               onClick={handleLogin}
-              className="w-full h-12 text-white font-medium rounded bg-[#111c44] hover:bg-[#1e3a5f] transition-all duration-300 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] animate-fade-in-up animation-delay-300"
+              disabled={isLoading}
+              className="w-full h-12 text-white font-medium rounded bg-[#111c44] hover:bg-[#1e3a5f] transition-all duration-300 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] animate-fade-in-up animation-delay-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Entrar
+              {isLoading ? "Entrando..." : "Entrar"}
             </Button>
           </div>
         </div>
@@ -98,5 +119,17 @@ export default function LoginPage() {
         </p>
       </footer>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-pulse text-[#111c44]">Carregando...</div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
