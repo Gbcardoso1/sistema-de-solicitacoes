@@ -56,8 +56,8 @@ export default function PatrimonioPage() {
     setPdfBaixado(true);
   };
 
-  const handleConfirmarEnvio = () => {
-    addSolicitacao({ tipo: "patrimonio", nome, matricula, instituicao, dados: { patrimonio }, itens: itensFiltrados.map(p => ({ tipo: p.tipo, quantidade: p.quantidade, setor: p.setor })) });
+  const handleConfirmarEnvio = async () => {
+    await addSolicitacao({ tipo: "patrimonio", nome, matricula, instituicao, dados: { patrimonio }, itens: itensFiltrados.map(p => ({ tipo: p.tipo, quantidade: p.quantidade, setor: p.setor })) });
     setModalAberto(false);
     alert("Solicitacao finalizada");
     router.push("/");

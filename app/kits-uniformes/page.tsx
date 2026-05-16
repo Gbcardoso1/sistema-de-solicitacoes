@@ -96,8 +96,8 @@ export default function KitsUniformesPage() {
 
   const handleBaixarPDF = async () => { await gerarComprovantePDF(getDadosComprovante()); setPdfBaixado(true); };
 
-  const handleConfirmarEnvio = () => {
-    addSolicitacao({
+  const handleConfirmarEnvio = async () => {
+    await addSolicitacao({
       tipo: "kits-uniformes", nome, matricula, instituicao,
       dados: { uniformes, kitsAluno, calcados, mochilas, kitsProfessor },
       uniformes: uniformes.reduce((a, u) => a + u.quantidade, 0),

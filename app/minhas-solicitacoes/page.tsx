@@ -19,12 +19,12 @@ export default function MinhasSolicitacoesPage() {
   const [erroSolicitacao, setErroSolicitacao] = useState("");
   const [buscaRealizada, setBuscaRealizada] = useState(false);
 
-  const buscarMinhasSolicitacoes = () => {
+  const buscarMinhasSolicitacoes = async () => {
     if (!nome || !matricula || !instituicao) {
       setErroSolicitacao("Preencha todos os dados do solicitante");
       return;
     }
-    const solicitacoes = getSolicitacoesPorInstituicao(instituicao);
+    const solicitacoes = await getSolicitacoesPorInstituicao(instituicao);
     setBuscaRealizada(true);
     if (solicitacoes.length > 0) {
       setSolicitacoesLista(solicitacoes);

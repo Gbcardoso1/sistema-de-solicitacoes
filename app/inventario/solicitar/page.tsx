@@ -96,7 +96,7 @@ export default function SolicitarInventarioPage() {
     setPdfBaixado(true);
   };
 
-  const handleEnviar = () => {
+  const handleEnviar = async () => {
     if (!escola || !setor || !solicitante || !matricula) {
       alert("Por favor, preencha todos os campos obrigatorios.");
       return;
@@ -107,7 +107,7 @@ export default function SolicitarInventarioPage() {
       return;
     }
 
-    addInventario({
+    await addInventario({
       escola,
       secretaria,
       setor,

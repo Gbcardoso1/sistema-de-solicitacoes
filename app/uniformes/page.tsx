@@ -84,8 +84,8 @@ export default function UniformesPage() {
 
   const handleBaixarPDF = async () => { await gerarComprovantePDF(getDadosComprovante()); setPdfBaixado(true); };
 
-  const handleConfirmarEnvio = () => {
-    addSolicitacao({
+  const handleConfirmarEnvio = async () => {
+    await addSolicitacao({
       tipo: "uniformes", nome, matricula, instituicao,
       dados: { uniformes, calcados, polos },
       uniformes: uniformes.reduce((a, u) => a + u.quantidade, 0),
