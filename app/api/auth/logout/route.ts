@@ -1,15 +1,23 @@
+import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 
 export async function POST() {
   try {
-    const cookieStore = await cookies();
+    const supabase = await createClient();
     
-    // Remove o cookie de sessao
-    cookieStore.delete("admin_session");
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.error("[v0] Logout error:", error.message);
+      return NextResponse.json(
+        { error: "Erro ao fazer logout" },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (err) {
+    console.error("[v0] Logout error:", err);
     return NextResponse.json(
       { error: "Erro ao fazer logout" },
       { status: 500 }

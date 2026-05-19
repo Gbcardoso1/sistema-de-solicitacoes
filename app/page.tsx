@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   LogIn,
   Shirt,
@@ -59,6 +59,7 @@ const menuItemsRight = [
 
 export default function HomePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Login modal state
   const [showLogin, setShowLogin] = useState(false);
@@ -67,6 +68,18 @@ export default function HomePage() {
   const [loginErro, setLoginErro] = useState("");
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Abrir modal automaticamente se redirecionado do admin
+  useEffect(() => {
+    const loginRequired = searchParams.get("login");
+    if (loginRequired === "required") {
+      setShowLogin(true);
+      setLoginErro("Faça login para acessar o painel administrativo");
+    } else if (loginRequired === "error") {
+      setShowLogin(true);
+      setLoginErro("Erro na autenticação. Tente novamente.");
+    }
+  }, [searchParams]);
 
   const handleLogin = async () => {
     if (isLoading) return;
@@ -80,11 +93,14 @@ export default function HomePage() {
         body: JSON.stringify({ login: loginUsuario, senha: loginSenha }),
       });
 
-      if (response.ok) {
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        fecharLogin();
         router.push("/admin");
         router.refresh();
       } else {
-        setLoginErro("Usuario ou senha incorretos");
+        setLoginErro(data.error || "Usuário ou senha incorretos");
       }
     } catch {
       setLoginErro("Erro ao fazer login. Tente novamente.");

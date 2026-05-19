@@ -1,30 +1,19 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { updateSession } from '@/lib/supabase/proxy'
+import { type NextRequest } from 'next/server'
 
-// Rotas que requerem autenticacao
-const PROTECTED_ROUTES = ["/admin"];
-
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Verifica se a rota precisa de autenticacao
-  const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
-    pathname.startsWith(route)
-  );
-
-  if (isProtectedRoute) {
-    // Verifica se existe o cookie de sessao
-    const sessionToken = request.cookies.get("admin_session");
-
-    if (!sessionToken || sessionToken.value !== "authenticated") {
-      // Redireciona para a pagina inicial (onde tem o modal de login)
-      return NextResponse.redirect(new URL("/", request.url));
-    }
-  }
-
-  return NextResponse.next();
+export async function middleware(request: NextRequest) {
+  return await updateSession(request)
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
-};
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - images - .svg, .png, .jpg, .jpeg, .gif, .webp
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
+}
