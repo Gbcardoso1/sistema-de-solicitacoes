@@ -84,8 +84,8 @@ export default function KitsPage() {
 
   const handleBaixarPDF = async () => { await gerarComprovantePDF(getDadosComprovante()); setPdfBaixado(true); };
 
-  const handleConfirmarEnvio = () => {
-    addSolicitacao({
+  const handleConfirmarEnvio = async () => {
+    await addSolicitacao({
       tipo: "kits", nome, matricula, instituicao,
       dados: { kitsAluno, mochilas, kitsProf },
       kitsAluno: kitsAluno.reduce((a, k) => a + k.quantidade, 0),

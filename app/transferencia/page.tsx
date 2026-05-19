@@ -77,8 +77,8 @@ export default function TransferenciaPage() {
 
   const handleBaixarPDF = async () => { await gerarPDFTransferencia(getDadosTransferencia()); setPdfBaixado(true); };
 
-  const handleConfirmarEnvio = () => {
-    addSolicitacao({
+  const handleConfirmarEnvio = async () => {
+    await addSolicitacao({
       tipo: "transferencia", nome: responsavelOrigem, matricula: matriculaOrigem, instituicao: unidadeOrigem,
       dados: { unidadeOrigem, responsavelOrigem, matriculaOrigem, unidadeDestino, responsavelDestino, matriculaDestino, tmbpPms, data, situacao, condicao, itens, arquivoLaudo: arquivoLaudo?.name || null },
       unidadeOrigem,

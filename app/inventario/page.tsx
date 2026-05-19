@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { getSolicitacoes, addInventario, addInventarioSetor, type InventarioItem, type Solicitacao } from "@/lib/solicitacoes-store";
+import { getSolicitacoes, fetchSolicitacoes, addInventario, addInventarioSetor, type InventarioItem, type Solicitacao } from "@/lib/solicitacoes-store";
 import { getInstituicoesAtivas } from "@/lib/instituicoes-store";
 
 export default function InventarioPage() {
@@ -57,8 +57,8 @@ export default function InventarioPage() {
   const [solicitacoesEncontradas, setSolicitacoesEncontradas] = useState<Solicitacao[]>([]);
   const [buscaRealizada, setBuscaRealizada] = useState(false);
 
-  const prePopularItensParaEscola = (escolaSelecionada: string) => {
-    const todasSolicitacoes = getSolicitacoes().filter((s) => s.tipo === "patrimonio");
+  const prePopularItensParaEscola = async (escolaSelecionada: string) => {
+    const todasSolicitacoes = (await fetchSolicitacoes()).filter((s) => s.tipo === "patrimonio");
     const solicitacoesFinalizadas = todasSolicitacoes.filter(
       (s) =>
         s.instituicao.toLowerCase() === escolaSelecionada.toLowerCase() &&
@@ -150,7 +150,7 @@ export default function InventarioPage() {
     setItensInventario(itensInventario.map((item) => (item.id === id ? { ...item, [campo]: valor } : item)));
   };
 
-  const handleEnviarInventario = () => {
+  const handleEnviarInventario = async () => {
     if (!escola || !solicitante || !matricula) {
       alert("Por favor, preencha todos os campos obrigatorios.");
       return;
@@ -162,7 +162,7 @@ export default function InventarioPage() {
       return;
     }
 
-    addInventario({
+    await addInventario({
       instituicao: escola,
       solicitante,
       matricula,
@@ -189,13 +189,13 @@ export default function InventarioPage() {
     ]);
   };
 
-  const buscarMinhasSolicitacoes = () => {
+  const buscarMinhasSolicitacoes = async () => {
     if (!buscaInstituicao) {
       alert("Por favor, selecione a instituicao para buscar.");
       return;
     }
 
-    const todasSolicitacoes = getSolicitacoes();
+    const todasSolicitacoes = await fetchSolicitacoes();
     const normalizar = (str: string) => {
       return str.toLowerCase()
         .normalize("NFD")
@@ -714,7 +714,7 @@ export default function InventarioPage() {
                   Cancelar
                 </Button>
                 <Button
-                  onClick={() => {
+                  onClick={async () => {
                     if (!invSetorSecretaria || !invSetorDenominacao || !invSetorEndereco || !invSetorSalaResponsavel || !invSetorRespNome || !invSetorRespCPF || !invSetorRespMatricula || !invSetorAgenteNome || !invSetorAgenteCPF || !invSetorAgenteMatricula) {
                       alert("Preencha todos os campos obrigatorios antes de enviar.");
                       return;
@@ -723,7 +723,7 @@ export default function InventarioPage() {
                       alert("Adicione pelo menos um item ao inventario antes de enviar.");
                       return;
                     }
-                    addInventarioSetor({
+                    await addInventarioSetor({
                       secretaria: invSetorSecretaria,
                       denominacao: invSetorDenominacao,
                       endereco: invSetorEndereco,

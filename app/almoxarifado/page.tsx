@@ -77,8 +77,8 @@ export default function AlmoxarifadoPage() {
     setPdfBaixado(true);
   };
 
-  const handleConfirmarEnvio = () => {
-    addSolicitacao({ tipo: "almoxarifado", nome, matricula, instituicao, dados: { papelaria, cozinha, creche } }, numeroSolicitacao);
+  const handleConfirmarEnvio = async () => {
+    await addSolicitacao({ tipo: "almoxarifado", nome, matricula, instituicao, dados: { papelaria, cozinha, creche } }, numeroSolicitacao);
     setModalAberto(false);
     alert("Solicitacao finalizada");
     router.push("/");

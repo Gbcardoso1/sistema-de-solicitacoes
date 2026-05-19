@@ -62,7 +62,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  getSolicitacoes,
+  fetchSolicitacoes,
+  updateSolicitacao,
   type Solicitacao,
   getConversasUnicas,
   getChatPorInstituicao,
@@ -905,7 +906,10 @@ function RecibosView() {
   const [reciboSelecionado, setReciboSelecionado] = useState<Recibo | null>(null);
 
   useEffect(() => {
-    setRecibos(getRecibos());
+    const loadRecibos = async () => {
+      setRecibos(await getRecibos());
+    };
+    loadRecibos();
   }, []);
 
   const tiposMaterial = ["Todos", "Patrimonio", "Almoxarifado", "Uniformes", "Kits", "Transferencia"];
@@ -919,9 +923,9 @@ function RecibosView() {
     return matchSearch && matchTipo;
   });
 
-  const handleExcluirRecibo = (id: string) => {
-    deleteRecibo(id);
-    setRecibos(getRecibos());
+  const handleExcluirRecibo = async (id: string) => {
+    await deleteRecibo(id);
+    setRecibos(await getRecibos());
     setReciboSelecionado(null);
   };
 
@@ -1775,19 +1779,19 @@ export default function AdminPage() {
     inventario: pendentesInventario,
   };
 
-  const carregarDados = () => {
-    const todasSolicitacoes = getSolicitacoes();
+  const carregarDados = async () => {
+    const todasSolicitacoes = await fetchSolicitacoes();
     setSolicitacoes(todasSolicitacoes);
     const instituicoesUnicas = [
       "Todas Instituicoes",
       ...new Set(todasSolicitacoes.map((s) => s.instituicao)),
     ];
     setInstituicoes(instituicoesUnicas);
-    setConversas(getConversasUnicas());
+    setConversas(await getConversasUnicas());
     setUsuarios(getUsuarios());
     setSetoresState(getSetores());
-    setInventarios(getInventarios());
-    setInventariosSetor(getInventariosSetor());
+    setInventarios(await getInventarios());
+    setInventariosSetor(await getInventariosSetor());
   };
 
   useEffect(() => {
@@ -1800,10 +1804,13 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (conversaSelecionada) {
-      const msgs = getChatPorInstituicao(conversaSelecionada);
-      setMensagensConversa(msgs);
-      marcarMensagensComoLidas(conversaSelecionada);
-      setConversas(getConversasUnicas());
+      const loadChat = async () => {
+        const msgs = await getChatPorInstituicao(conversaSelecionada);
+        setMensagensConversa(msgs);
+        await marcarMensagensComoLidas(conversaSelecionada);
+        setConversas(await getConversasUnicas());
+      };
+      loadChat();
     }
   }, [conversaSelecionada]);
 
@@ -2113,32 +2120,24 @@ export default function AdminPage() {
     doc.save("solicitacoes.pdf");
   };
 
-  const handleDeleteSolicitacao = (id: string) => {
+  const handleDeleteSolicitacao = async (id: string) => {
     setSolicitacoes((prev) => prev.filter((s) => s.id !== id));
-    if (typeof window !== "undefined") {
-      const updated = solicitacoes.filter((s) => s.id !== id);
-      localStorage.setItem("inove_saqua_solicitacoes", JSON.stringify(updated));
-    }
+    const supabase = (await import("@/lib/supabase/client")).createClient();
+    await supabase.from("solicitacoes").delete().eq("id", id);
   };
 
-  const handleChangeResponsavel = (id: string, novoResponsavel: string) => {
+  const handleChangeResponsavel = async (id: string, novoResponsavel: string) => {
   setSolicitacoes((prev) =>
     prev.map((s) => (s.id === id ? { ...s, responsavel: novoResponsavel } : s))
   );
-  if (typeof window !== "undefined") {
-    const updated = solicitacoes.map((s) => (s.id === id ? { ...s, responsavel: novoResponsavel } : s));
-    localStorage.setItem("inove_saqua_solicitacoes", JSON.stringify(updated));
-  }
+  await updateSolicitacao(id, { responsavel: novoResponsavel });
   };
 
-  const handleChangeStatus = (id: string, newStatus: string) => {
+  const handleChangeStatus = async (id: string, newStatus: string) => {
   setSolicitacoes((prev) =>
   prev.map((s) => (s.id === id ? { ...s, status: newStatus as Solicitacao["status"] } : s))
   );
-  if (typeof window !== "undefined") {
-  const updated = solicitacoes.map((s) => (s.id === id ? { ...s, status: newStatus } : s));
-      localStorage.setItem("inove_saqua_solicitacoes", JSON.stringify(updated));
-    }
+  await updateSolicitacao(id, { status: newStatus as Solicitacao["status"] });
   };
 
 
@@ -2253,9 +2252,9 @@ export default function AdminPage() {
     URL.revokeObjectURL(url);
   };
 
-  const enviarResposta = () => {
+  const enviarResposta = async () => {
     if (novaMensagem.trim() && conversaSelecionada) {
-      const msg = addChatMessage({
+      const msg = await addChatMessage({
         remetente: "patrimonio",
         nomeRemetente: "Equipe Patrimonio",
         instituicao: conversaSelecionada,
@@ -2655,14 +2654,11 @@ const getSidebarDescription = () => {
   const [editingSolicitacao, setEditingSolicitacao] = useState<Solicitacao | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  const handleSaveEdit = (updated: Solicitacao) => {
+  const handleSaveEdit = async (updated: Solicitacao) => {
     setSolicitacoes((prev) =>
       prev.map((s) => (s.id === updated.id ? updated : s))
     );
-    if (typeof window !== "undefined") {
-      const all = solicitacoes.map((s) => (s.id === updated.id ? updated : s));
-      localStorage.setItem("inove_saqua_solicitacoes", JSON.stringify(all));
-    }
+    await updateSolicitacao(updated.id, updated);
     setEditDialogOpen(false);
     setEditingSolicitacao(null);
   };
@@ -3322,9 +3318,9 @@ const getSidebarDescription = () => {
                           <span className="text-xs text-[#666]">Status:</span>
                           <Select
                             value={inventarioSetorSelecionado.status}
-                            onValueChange={(newStatus) => {
-                              updateInventarioSetor(inventarioSetorSelecionado.id, { status: newStatus as SolicitacaoInventarioSetor["status"] });
-                              setInventariosSetor(getInventariosSetor());
+                            onValueChange={async (newStatus) => {
+                              await updateInventarioSetor(inventarioSetorSelecionado.id, { status: newStatus as SolicitacaoInventarioSetor["status"] });
+                              setInventariosSetor(await getInventariosSetor());
                               setInventarioSetorSelecionado({ ...inventarioSetorSelecionado, status: newStatus as SolicitacaoInventarioSetor["status"] });
                             }}
                           >
@@ -5904,9 +5900,9 @@ const getSidebarDescription = () => {
               <div className="flex gap-3 pt-2">
                 <Select
                   value={inventarioSelecionado.status}
-                  onValueChange={(newStatus) => {
-                    updateInventario(inventarioSelecionado.id, { status: newStatus as SolicitacaoInventario["status"] });
-                    setInventarios(getInventarios());
+                  onValueChange={async (newStatus) => {
+                    await updateInventario(inventarioSelecionado.id, { status: newStatus as SolicitacaoInventario["status"] });
+                    setInventarios(await getInventarios());
                     setInventarioSelecionado({ ...inventarioSelecionado, status: newStatus as SolicitacaoInventario["status"] });
                   }}
                 >
