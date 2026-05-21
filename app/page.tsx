@@ -444,9 +444,9 @@ export default function HomePage() {
                       onChange={(e) => setMensagem(e.target.value)}
                       placeholder="Digite sua mensagem..."
                       className="min-h-[40px] max-h-[80px] text-sm resize-none"
-                      onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); enviarMensagem(); } }}
+                      onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void enviarMensagem(); } }}
                     />
-                    <Button onClick={enviarMensagem} disabled={!mensagem.trim()} size="icon" className="bg-[#1a1a4e] hover:bg-[#252566] text-white shrink-0">
+                    <Button onClick={() => void enviarMensagem()} disabled={!mensagem.trim()} size="icon" className="bg-[#1a1a4e] hover:bg-[#252566] text-white shrink-0">
                       <Send className="w-4 h-4" />
                     </Button>
                   </div>
