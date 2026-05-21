@@ -530,7 +530,7 @@ export async function getChatPorInstituicao(instituicao: string): Promise<ChatMe
     .from("chat_messages")
     .select("*")
     .ilike("instituicao", instituicao)
-    .order("created_at", { ascending: true });
+    .order("data_hora", { ascending: true });
 
   if (error) {
     console.error("Erro ao buscar chat:", error);

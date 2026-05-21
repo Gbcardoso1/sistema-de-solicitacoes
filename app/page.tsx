@@ -133,6 +133,7 @@ export default function HomePage() {
   const enviarMensagem = async () => {
     if (mensagem.trim()) {
       try {
+        console.log("[v0] Iniciando envio de mensagem:", { nomeUsuario, instituicaoUsuario, mensagem });
         const novaMensagem = await addChatMessage({
           remetente: "escola",
           nomeRemetente: nomeUsuario,
@@ -140,10 +141,11 @@ export default function HomePage() {
           mensagem: mensagem.trim(),
           conversaId: instituicaoUsuario.toLowerCase().replace(/\s+/g, "-"),
         });
+        console.log("[v0] Mensagem enviada com sucesso:", novaMensagem);
         setMensagens((prev) => [...prev, novaMensagem]);
         setMensagem("");
       } catch (error) {
-        console.error("Erro ao enviar mensagem:", error);
+        console.error("[v0] Erro ao enviar mensagem:", error);
       }
     }
   };
