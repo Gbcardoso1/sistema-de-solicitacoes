@@ -112,8 +112,11 @@ export default function HomePage() {
 
   useEffect(() => {
     if (instituicaoUsuario && chatStep === "chat") {
-      const msgs = getChatPorInstituicao(instituicaoUsuario);
-      setMensagens(msgs);
+      const loadMessages = async () => {
+        const msgs = await getChatPorInstituicao(instituicaoUsuario);
+        setMensagens(msgs);
+      };
+      loadMessages();
     }
   }, [instituicaoUsuario, chatStep]);
 
@@ -127,17 +130,21 @@ export default function HomePage() {
     }
   };
 
-  const enviarMensagem = () => {
+  const enviarMensagem = async () => {
     if (mensagem.trim()) {
-      const novaMensagem = addChatMessage({
-        remetente: "escola",
-        nomeRemetente: nomeUsuario,
-        instituicao: instituicaoUsuario,
-        mensagem: mensagem.trim(),
-        conversaId: instituicaoUsuario.toLowerCase().replace(/\s+/g, "-"),
-      });
-      setMensagens((prev) => [...prev, novaMensagem]);
-      setMensagem("");
+      try {
+        const novaMensagem = await addChatMessage({
+          remetente: "escola",
+          nomeRemetente: nomeUsuario,
+          instituicao: instituicaoUsuario,
+          mensagem: mensagem.trim(),
+          conversaId: instituicaoUsuario.toLowerCase().replace(/\s+/g, "-"),
+        });
+        setMensagens((prev) => [...prev, novaMensagem]);
+        setMensagem("");
+      } catch (error) {
+        console.error("Erro ao enviar mensagem:", error);
+      }
     }
   };
 
