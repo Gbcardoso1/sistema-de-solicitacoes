@@ -1673,6 +1673,7 @@ export default function AdminPage() {
   const [selectedSolicitacao, setSelectedSolicitacao] = useState<Solicitacao | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [expandedTransferencia, setExpandedTransferencia] = useState<string | null>(null);
   const [activeSidebar, setActiveSidebar] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -2665,8 +2666,8 @@ const getSidebarDescription = () => {
 
   return (
     <div className="min-h-screen bg-[#f5f5f5] flex">
-      {/* Sidebar */}
-      <aside className={`${sidebarOpen ? (sidebarCollapsed ? "w-[70px]" : "w-60") : "w-0 overflow-hidden"} bg-[#111c44] flex flex-col shrink-0 transition-all duration-300 rounded-r-3xl`}>
+{/* Sidebar */}
+        <aside className={`${sidebarOpen ? (sidebarCollapsed ? "w-[70px]" : "w-60") : "w-0 overflow-hidden"} bg-[#111c44] flex flex-col shrink-0 transition-all duration-300`}>
         <div className={`px-4 py-5 border-b border-white/10 flex items-center ${sidebarCollapsed ? "justify-center" : "gap-3"}`}>
           <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
             <Armchair className="w-5 h-5 text-white" />
@@ -4804,13 +4805,23 @@ const getSidebarDescription = () => {
 
                     {/* Actions */}
                     <div className="flex items-center justify-center gap-0.5">
-                      <button
-                        onClick={() => { setEditingSolicitacao(JSON.parse(JSON.stringify(solicitacao))); setEditDialogOpen(true); }}
-                        className="p-1.5 text-[#aaa] hover:text-[#111c44] hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Ver / Editar Solicitacao"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
+                      {isTransferencia ? (
+                        <button
+                          onClick={() => setExpandedTransferencia(expandedTransferencia === solicitacao.id ? null : solicitacao.id)}
+                          className={`p-1.5 ${expandedTransferencia === solicitacao.id ? "text-sky-600 bg-sky-50" : "text-[#aaa]"} hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors`}
+                          title="Ver Detalhes da Transferência"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => { setEditingSolicitacao(JSON.parse(JSON.stringify(solicitacao))); setEditDialogOpen(true); }}
+                          className="p-1.5 text-[#aaa] hover:text-[#111c44] hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Ver / Editar Solicitacao"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      )}
                       <button
                         onClick={() => handleBaixarPDF(solicitacao)}
                         className="p-1.5 text-[#aaa] hover:text-[#111c44] hover:bg-blue-50 rounded-lg transition-colors"
@@ -4828,8 +4839,8 @@ const getSidebarDescription = () => {
                     </div>
                     </div>
 
-                    {/* Detalhes extras para transferencias */}
-                    {isTransferencia && (
+                    {/* Detalhes extras para transferencias - só mostra quando expandido */}
+                    {isTransferencia && expandedTransferencia === solicitacao.id && (
                       <div className="px-5 pb-3 pt-1">
                         <div className="bg-sky-50 border border-sky-200 rounded-lg p-3 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                           <div className="flex items-center gap-2">
@@ -4875,6 +4886,20 @@ const getSidebarDescription = () => {
                                 <FileText className="w-3 h-3" />
                                 {solicitacao.arquivoLaudo || solicitacao.dados?.arquivoLaudo}
                               </span>
+                            </div>
+                          )}
+                          {/* Lista de itens transferidos */}
+                          {(solicitacao.itensTransferencia || solicitacao.dados?.itens || []).length > 0 && (
+                            <div className="col-span-full mt-2 pt-2 border-t border-sky-200">
+                              <span className="text-sky-700 font-semibold block mb-2">Itens Transferidos:</span>
+                              <div className="grid gap-1.5">
+                                {(solicitacao.itensTransferencia || solicitacao.dados?.itens || []).map((item: { id?: number; numeroPatrimonio?: string; descricaoItem?: string }, idx: number) => (
+                                  <div key={idx} className="bg-white p-2 rounded border border-sky-100 flex gap-4">
+                                    <span><strong className="text-sky-600">N Patrimonio:</strong> {item.numeroPatrimonio || "-"}</span>
+                                    <span><strong className="text-sky-600">Descricao:</strong> {item.descricaoItem || "-"}</span>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           )}
                         </div>

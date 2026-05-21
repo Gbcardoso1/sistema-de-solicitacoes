@@ -43,17 +43,17 @@ import { getInstituicoesAtivas } from "@/lib/instituicoes-store";
 
 // Menu items - left column
 const menuItemsLeft = [
-  { href: "/patrimonio", label: "SOLICITAR PATRIMONIO", icon: Armchair },
   { href: "/almoxarifado", label: "SOLICITAR ALMOXARIFADO", icon: Package },
-  { href: "/uniformes", label: "SOLICITAR UNIFORMES", icon: Shirt },
   { href: "/kits", label: "SOLICITAR KITS", icon: Package },
+  { href: "/patrimonio", label: "SOLICITAR PATRIMONIO", icon: Armchair },
+  { href: "/uniformes", label: "SOLICITAR UNIFORMES", icon: Shirt },
 ];
 
 // Menu items - right column
 const menuItemsRight = [
   { href: "/transferencia", label: "TRANSFERENCIA DE ITENS", icon: ArrowRightLeft },
-  { href: "/inventario", label: "INVENTARIO ANUAL", icon: ClipboardList },
   { href: "/minhas-solicitacoes", label: "VERIFICAR SOLICITACAO", icon: Armchair },
+  { href: "/inventario", label: "INVENTARIO ANUAL", icon: ClipboardList },
   { href: "/duvidas", label: "DUVIDAS FREQUENTES", icon: HelpCircle },
 ];
 
@@ -222,10 +222,10 @@ export default function HomePage() {
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-bold text-[#1a1a4e] uppercase tracking-tight leading-tight group-hover:text-[#0fb992] transition-colors duration-300">{item.label}</h3>
                     <p className="text-xs text-gray-500 mt-1 group-hover:text-gray-600 transition-colors duration-300">
-                      {item.label === "SOLICITAR PATRIMONIO" && "Solicite novos patrimônios."}
                       {item.label === "SOLICITAR ALMOXARIFADO" && "Solicite materiais do almoxarifado."}
-                      {item.label === "SOLICITAR UNIFORMES" && "Solicite uniformes para sua equipe."}
                       {item.label === "SOLICITAR KITS" && "Solicite kits disponíveis."}
+                      {item.label === "SOLICITAR PATRIMONIO" && "Solicite novos patrimônios."}
+                      {item.label === "SOLICITAR UNIFORMES" && "Solicite uniformes para sua equipe."}
                     </p>
                   </div>
                   <svg className="w-5 h-5 text-gray-400 group-hover:text-[#0fb992] group-hover:translate-x-1 transition-all duration-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
