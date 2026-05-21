@@ -44,8 +44,8 @@ import { getInstituicoesAtivas } from "@/lib/instituicoes-store";
 // Menu items - left column
 const menuItemsLeft = [
   { href: "/almoxarifado", label: "SOLICITAR ALMOXARIFADO", icon: Package },
-  { href: "/kits", label: "SOLICITAR KITS", icon: Package },
   { href: "/uniformes", label: "SOLICITAR UNIFORMES", icon: Shirt },
+  { href: "/kits", label: "SOLICITAR KITS", icon: Package },
   { href: "/patrimonio", label: "SOLICITAR PATRIMONIO", icon: Armchair },
 ];
 
