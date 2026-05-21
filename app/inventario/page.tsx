@@ -162,15 +162,20 @@ export default function InventarioPage() {
       return;
     }
 
-    await addInventario({
-      instituicao: escola,
-      solicitante,
-      matricula,
-      ano,
-      itens: itensPreenchidos,
-    });
-
-    setEnviado(true);
+    try {
+      await addInventario({
+        escola,
+        secretaria,
+        solicitante,
+        matricula,
+        ano,
+        itens: itensPreenchidos,
+      });
+      setEnviado(true);
+    } catch (error) {
+      console.error("Erro ao enviar inventario:", error);
+      alert("Erro ao enviar o inventario. Por favor, tente novamente.");
+    }
   };
 
   const fecharFormulario = () => {

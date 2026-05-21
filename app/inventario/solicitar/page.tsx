@@ -107,18 +107,23 @@ export default function SolicitarInventarioPage() {
       return;
     }
 
-    await addInventario({
-      escola,
-      secretaria,
-      setor,
-      solicitante,
-      matricula,
-      assinatura,
-      ano,
-      itens: itensPreenchidos,
-    });
+    try {
+      await addInventario({
+        escola,
+        secretaria,
+        setor,
+        solicitante,
+        matricula,
+        assinatura,
+        ano,
+        itens: itensPreenchidos,
+      });
 
-    setEnviado(true);
+      setEnviado(true);
+    } catch (error) {
+      console.error("Erro ao enviar inventario:", error);
+      alert("Erro ao enviar o inventario. Por favor, tente novamente.");
+    }
   };
 
   if (enviado) {

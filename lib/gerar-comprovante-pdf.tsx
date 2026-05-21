@@ -52,35 +52,16 @@ export async function gerarComprovantePDF(dados: DadosComprovante) {
   const contentWidth = pageWidth - margin * 2;
   let y = 0;
 
-  // --- Header with logo ---
-  try {
-    const logoImg = new Image();
-    logoImg.crossOrigin = "anonymous";
-    await new Promise<void>((resolve, reject) => {
-      logoImg.onload = () => resolve();
-      logoImg.onerror = () => reject();
-      logoImg.src = "/logo-prefeitura.png";
-    });
-    const canvas = document.createElement("canvas");
-    canvas.width = logoImg.width;
-    canvas.height = logoImg.height;
-    const ctx = canvas.getContext("2d");
-    ctx?.drawImage(logoImg, 0, 0);
-    const logoDataUrl = canvas.toDataURL("image/png");
-    const logoWidth = 70;
-    const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
-    doc.addImage(logoDataUrl, "PNG", (pageWidth - logoWidth) / 2, 8, logoWidth, logoHeight);
-    y = 8 + logoHeight + 6;
-  } catch {
-    // Fallback to text header if logo fails
-    doc.setFillColor(13, 59, 140);
-    doc.rect(0, 0, pageWidth, 32, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.setTextColor(255, 255, 255);
-    doc.text("PREFEITURA MUNICIPAL DE SAQUAREMA", pageWidth / 2, 15, { align: "center" });
-    y = 42;
-  }
+  // --- Header (text-based for reliability) ---
+  doc.setFillColor(13, 59, 140);
+  doc.rect(0, 0, pageWidth, 32, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.setTextColor(255, 255, 255);
+  doc.text("PREFEITURA MUNICIPAL DE SAQUAREMA", pageWidth / 2, 15, { align: "center" });
+  doc.setFontSize(10);
+  doc.text("Secretaria Municipal de Educacao", pageWidth / 2, 23, { align: "center" });
+  y = 42;
 
   // Subtitle
   doc.setFont("helvetica", "bold");
@@ -239,35 +220,16 @@ export async function gerarPDFTransferencia(dados: DadosTransferencia) {
 
   const itensFiltrados = dados.itens.filter(i => i.descricaoItem);
 
-  // --- Header with logo ---
-  try {
-    const logoImg = new Image();
-    logoImg.crossOrigin = "anonymous";
-    await new Promise<void>((resolve, reject) => {
-      logoImg.onload = () => resolve();
-      logoImg.onerror = () => reject();
-      logoImg.src = "/logo-prefeitura.png";
-    });
-    const canvas = document.createElement("canvas");
-    canvas.width = logoImg.width;
-    canvas.height = logoImg.height;
-    const ctx = canvas.getContext("2d");
-    ctx?.drawImage(logoImg, 0, 0);
-    const logoDataUrl = canvas.toDataURL("image/png");
-    const logoWidth = 70;
-    const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
-    doc.addImage(logoDataUrl, "PNG", (pageWidth - logoWidth) / 2, 8, logoWidth, logoHeight);
-    y = 8 + logoHeight + 6;
-  } catch {
-    // Fallback to text header if logo fails
-    doc.setFillColor(13, 59, 140);
-    doc.rect(0, 0, pageWidth, 38, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.setTextColor(255, 255, 255);
-    doc.text("PREFEITURA MUNICIPAL DE SAQUAREMA", pageWidth / 2, 17, { align: "center" });
-    y = 48;
-  }
+  // --- Header (text-based for reliability) ---
+  doc.setFillColor(13, 59, 140);
+  doc.rect(0, 0, pageWidth, 38, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.setTextColor(255, 255, 255);
+  doc.text("PREFEITURA MUNICIPAL DE SAQUAREMA", pageWidth / 2, 17, { align: "center" });
+  doc.setFontSize(10);
+  doc.text("Secretaria de Patrimonio", pageWidth / 2, 27, { align: "center" });
+  y = 48;
 
   // Subtitle
   doc.setFont("helvetica", "bold");
