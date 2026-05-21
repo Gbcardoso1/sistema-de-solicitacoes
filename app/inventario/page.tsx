@@ -162,13 +162,14 @@ export default function InventarioPage() {
       return;
     }
 
-    await addInventario({
-      instituicao: escola,
-      solicitante,
-      matricula,
-      ano,
-      itens: itensPreenchidos,
-    });
+await addInventario({
+  escola,
+  secretaria,
+  solicitante,
+  matricula,
+  ano,
+  itens: itensPreenchidos,
+});
 
     setEnviado(true);
   };
