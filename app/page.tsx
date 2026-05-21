@@ -45,15 +45,15 @@ import { getInstituicoesAtivas } from "@/lib/instituicoes-store";
 const menuItemsLeft = [
   { href: "/almoxarifado", label: "SOLICITAR ALMOXARIFADO", icon: Package },
   { href: "/kits", label: "SOLICITAR KITS", icon: Package },
-  { href: "/patrimonio", label: "SOLICITAR PATRIMONIO", icon: Armchair },
   { href: "/uniformes", label: "SOLICITAR UNIFORMES", icon: Shirt },
+  { href: "/patrimonio", label: "SOLICITAR PATRIMONIO", icon: Armchair },
 ];
 
 // Menu items - right column
 const menuItemsRight = [
   { href: "/transferencia", label: "TRANSFERENCIA DE ITENS", icon: ArrowRightLeft },
-  { href: "/minhas-solicitacoes", label: "VERIFICAR SOLICITACAO", icon: Armchair },
   { href: "/inventario", label: "INVENTARIO ANUAL", icon: ClipboardList },
+  { href: "/minhas-solicitacoes", label: "VERIFICAR SOLICITACAO", icon: Armchair },
   { href: "/duvidas", label: "DUVIDAS FREQUENTES", icon: HelpCircle },
 ];
 
