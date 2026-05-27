@@ -1,30 +1,37 @@
-# Inventário de patrimônio
+# Sistema de Gestão de Patrimônio e Almoxarifado
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+Este projeto foi desenvolvido para atender às demandas do setor de Patrimônio e Almoxarifado da Prefeitura de Saquarema, com o objetivo de modernizar e centralizar processos que antes eram realizados manualmente.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/kayosmoker-6566s-projects/v0-sistema-integrado)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/eM95xLHe0RI)
+Durante minha atuação no setor de TI da prefeitura, identifiquei diversas falhas operacionais no fluxo de pedidos, entregas, controle de materiais e inventários. A partir dessa análise, realizei o levantamento de requisitos junto às equipes responsáveis e desenvolvi um sistema web capaz de integrar e organizar todas essas operações em um único ambiente.
 
-## Overview
+O sistema permite o gerenciamento de:
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+Solicitações de patrimônio
+Pedidos de almoxarifado
+Controle de uniformes e kits
+Transferência de itens entre unidades
+Inventário anual
+Acompanhamento de pedidos, envios e entregas
 
-## Deployment
+Além disso, foi desenvolvido um painel administrativo para gerenciamento das solicitações e uma dashboard com indicadores e dados estratégicos para apoio à tomada de decisão.
 
-Your project is live at:
+Outro diferencial do projeto foi a implementação de um chat integrado, melhorando significativamente a comunicação entre os setores envolvidos no processo.
 
-**[https://vercel.com/kayosmoker-6566s-projects/v0-sistema-integrado](https://vercel.com/kayosmoker-6566s-projects/v0-sistema-integrado)**
+Participei de todas as etapas do desenvolvimento do sistema, incluindo:
 
-## Build your app
+Levantamento e análise de requisitos
+Desenvolvimento das funcionalidades
+Testes e validações
+Correção de bugs
+Melhorias contínuas
 
-Continue building your app on:
+Atualmente, o sistema está em funcionamento em toda a rede municipal de Saquarema, contribuindo para:
 
-**[https://v0.app/chat/eM95xLHe0RI](https://v0.app/chat/eM95xLHe0RI)**
+Maior organização dos processos
+Padronização das solicitações
+Redução de erros operacionais
+Centralização das informações
+Controle mais eficiente das demandas
+Melhoria na comunicação entre os setores
 
-## How It Works
-
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+O projeto teve um impacto importante na rotina administrativa da prefeitura, tornando os processos mais ágeis, confiáveis e fáceis de acompanhar.
