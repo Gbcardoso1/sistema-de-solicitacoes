@@ -78,7 +78,17 @@ export default function AlmoxarifadoPage() {
   };
 
   const handleConfirmarEnvio = async () => {
-    await addSolicitacao({ tipo: "almoxarifado", nome, matricula, instituicao, dados: { papelaria, cozinha, creche } }, numeroSolicitacao);
+    await addSolicitacao({
+      tipo: "almoxarifado",
+      nome,
+      matricula,
+      instituicao,
+      dados: {
+        papelaria: itensFiltradosPapelaria,
+        cozinha: itensFiltradosCozinha,
+        creche: itensFiltradosCreche,
+      },
+    }, numeroSolicitacao);
     setModalAberto(false);
     alert("Solicitacao finalizada");
     router.push("/");
