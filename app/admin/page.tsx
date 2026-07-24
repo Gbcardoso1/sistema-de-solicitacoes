@@ -5040,7 +5040,7 @@ const getSidebarDescription = () => {
                 </div>
               </div>
 
-              {selectedSolicitacao.tipo === "kits-uniformes" && (
+              {(selectedSolicitacao.tipo === "kits-uniformes" || selectedSolicitacao.tipo === "uniformes" || selectedSolicitacao.tipo === "kits") && (
                 <>
                   <div className="grid grid-cols-5 gap-2 text-center">
                     <div className="bg-emerald-50 p-2 rounded-lg border border-emerald-200">
@@ -5137,6 +5137,23 @@ const getSidebarDescription = () => {
                       </div>
                     </div>
                   )}
+
+                  {(() => {
+                    const kitsProfDetalhes = (selectedSolicitacao.dados?.kitsProfDetalhes as { tipo: string; quantidade: number }[] | undefined) || [];
+                    return kitsProfDetalhes.length > 0 && (
+                      <div className="border border-[#e5e5e5] rounded-lg overflow-hidden">
+                        <div className="bg-indigo-500 text-white px-4 py-2 text-sm font-semibold">Kit Professor</div>
+                        <div className="p-3 space-y-2">
+                          {kitsProfDetalhes.map((item, idx) => (
+                            <div key={idx} className="bg-[#fafafa] p-2.5 rounded-lg text-xs flex gap-4 border border-[#e5e5e5]">
+                              <span><strong className="text-indigo-700">Tipo:</strong> {item.tipo}</span>
+                              <span><strong className="text-indigo-700">Qtd:</strong> {item.quantidade}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </>
               )}
 

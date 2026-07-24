@@ -87,7 +87,12 @@ export default function KitsPage() {
   const handleConfirmarEnvio = async () => {
     await addSolicitacao({
       tipo: "kits", nome, matricula, instituicao,
-      dados: { kitsAluno, mochilas, kitsProf },
+      dados: {
+        kitsAluno,
+        mochilas,
+        kitsProf,
+        kitsProfDetalhes: kitsProf.filter(k => k.quantidade > 0).map(k => ({ tipo: k.kit, quantidade: k.quantidade })),
+      },
       kitsAluno: kitsAluno.reduce((a, k) => a + k.quantidade, 0),
       mochilas: mochilas.reduce((a, m) => a + m.quantidade, 0),
       kitsAlunoDetalhes: kitsFiltrados.map(k => ({ tipo: k.tipo, quantidade: k.quantidade })),

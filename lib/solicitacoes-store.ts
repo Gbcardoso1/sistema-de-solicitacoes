@@ -45,6 +45,7 @@ export interface Solicitacao {
   // Para almoxarifado
   papelaria?: ItemDetalhado[];
   cozinha?: ItemDetalhado[];
+  creche?: ItemDetalhado[];
   // Para transferência
   unidadeOrigem?: string;
   unidadeDestino?: string;
@@ -151,6 +152,7 @@ export interface SolicitacaoInventarioSetor {
 
 // Converte dados do banco (snake_case) para a interface do app (camelCase)
 function dbToSolicitacao(row: Record<string, unknown>): Solicitacao {
+  const dados = (row.dados as Record<string, unknown>) || {};
   return {
     id: row.id as string,
     numeroSolicitacao: row.numero_solicitacao as string,
@@ -159,7 +161,7 @@ function dbToSolicitacao(row: Record<string, unknown>): Solicitacao {
     nome: row.nome as string,
     matricula: row.matricula as string,
     instituicao: row.instituicao as string,
-    dados: (row.dados as Record<string, unknown>) || {},
+    dados,
     uniformes: row.uniformes as number | undefined,
     calcados: row.calcados as number | undefined,
     kitsAluno: row.kits_aluno as number | undefined,
@@ -171,8 +173,12 @@ function dbToSolicitacao(row: Record<string, unknown>): Solicitacao {
     polosProfDetalhes: row.polos_prof_detalhes as ItemDetalhado[] | undefined,
     mochilasDetalhes: row.mochilas_detalhes as ItemDetalhado[] | undefined,
     itens: row.itens as Solicitacao["itens"],
-    papelaria: row.papelaria as ItemDetalhado[] | undefined,
-    cozinha: row.cozinha as ItemDetalhado[] | undefined,
+    // Os dados de almoxarifado sao salvos dentro de `dados` pela pagina de solicitacao.
+    // Hidratamos os campos de topo a partir de `dados` (com fallback para colunas dedicadas)
+    // para que o painel admin exiba papelaria, cozinha e creche de forma consistente.
+    papelaria: (row.papelaria as ItemDetalhado[] | undefined) ?? (dados.papelaria as ItemDetalhado[] | undefined),
+    cozinha: (row.cozinha as ItemDetalhado[] | undefined) ?? (dados.cozinha as ItemDetalhado[] | undefined),
+    creche: (row.creche as ItemDetalhado[] | undefined) ?? (dados.creche as ItemDetalhado[] | undefined),
     unidadeOrigem: row.unidade_origem as string | undefined,
     unidadeDestino: row.unidade_destino as string | undefined,
     responsavelDestino: row.responsavel_destino as string | undefined,
