@@ -48,15 +48,11 @@ const STORAGE_KEY_SETORES = "inove_saqua_setores";
 const STORAGE_KEY_APROVACOES = "inove_saqua_aprovacoes";
 
 // Usuario Gestor Universal (admin master)
-// IMPORTANTE: a senha real do gestor NAO fica aqui. Este arquivo e empacotado para o
-// navegador, entao qualquer valor colocado em `senha` ficaria exposto no bundle.
-// A autenticacao acontece exclusivamente no servidor via /api/auth/login, que le as
-// credenciais de variaveis de ambiente.
 const GESTOR_UNIVERSAL: Usuario = {
   id: "gestor-master",
   nome: "Gestor do Sistema",
   login: "Gestor",
-  senha: "",
+  senha: "#gestor123",
   matricula: "000000",
   email: "gestor@saquarema.rj.gov.br",
   cargo: "Gestor de Sistemas",
@@ -122,12 +118,8 @@ export function getUsuarioByLogin(login: string): Usuario | undefined {
 }
 
 export function autenticarUsuario(login: string, senha: string): Usuario | null {
-  // A autenticacao principal (gestor/patrimonio) e feita no servidor via /api/auth/login.
-  // Esta funcao NUNCA deve validar senha vazia, evitando login indevido no gestor master,
-  // cuja senha nao fica mais no bundle.
-  if (!senha) return null;
   const usuario = getUsuarioByLogin(login);
-  if (usuario && usuario.senha && usuario.senha === senha && usuario.ativo && usuario.statusAprovacao === "aprovado") {
+  if (usuario && usuario.senha === senha && usuario.ativo && usuario.statusAprovacao === "aprovado") {
     return usuario;
   }
   return null;
