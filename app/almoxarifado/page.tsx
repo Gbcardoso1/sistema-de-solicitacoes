@@ -3,7 +3,19 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Plus, Trash2, Package, Download, AlertTriangle, X, Minus } from "lucide-react";
+import {
+  ArrowLeft,
+  Package,
+  Download,
+  AlertTriangle,
+  X,
+  Minus,
+  Plus,
+  Search,
+  FileText,
+  UtensilsCrossed,
+  Baby,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,60 +24,92 @@ import { gerarComprovantePDF } from "@/lib/gerar-comprovante-pdf";
 import { getNomesAtivos } from "@/lib/itens-catalogo-store";
 import { getInstituicoesAtivas } from "@/lib/instituicoes-store";
 
-interface PapelariaItem { id: number; tipo: string; quantidade: number }
-interface CozinhaItem { id: number; tipo: string; quantidade: number }
-interface CrecheItem { id: number; tipo: string; quantidade: number }
+type CategoriaTab = "papelaria" | "cozinha" | "creche";
+
+const TABS: { id: CategoriaTab; label: string; icon: typeof FileText }[] = [
+  { id: "papelaria", label: "Papelaria", icon: FileText },
+  { id: "cozinha", label: "Cozinha", icon: UtensilsCrossed },
+  { id: "creche", label: "Creche", icon: Baby },
+];
+
+interface ItemSelecionado {
+  tipo: string;
+  quantidade: number;
+}
 
 export default function AlmoxarifadoPage() {
   const router = useRouter();
   const [nome, setNome] = useState("");
   const [matricula, setMatricula] = useState("");
   const [instituicao, setInstituicao] = useState("");
-  const [papelaria, setPapelaria] = useState<PapelariaItem[]>([{ id: 1, tipo: "", quantidade: 0 }]);
-  const [cozinha, setCozinha] = useState<CozinhaItem[]>([{ id: 1, tipo: "", quantidade: 0 }]);
-  const [creche, setCreche] = useState<CrecheItem[]>([{ id: 1, tipo: "", quantidade: 0 }]);
+  const [abaAtiva, setAbaAtiva] = useState<CategoriaTab>("papelaria");
+  const [busca, setBusca] = useState("");
+  // Mapa de quantidades: chave = "categoria::nomeItem"
+  const [quantidades, setQuantidades] = useState<Record<string, number>>({});
   const [modalAberto, setModalAberto] = useState(false);
   const [pdfBaixado, setPdfBaixado] = useState(false);
   const [numeroSolicitacao, setNumeroSolicitacao] = useState("");
 
-  // Memoizar listas de itens para evitar recálculos a cada render
-  const tiposPapelaria = useMemo(() => getNomesAtivos("papelaria"), []);
-  const tiposCozinha = useMemo(() => getNomesAtivos("cozinha"), []);
-  const tiposCreche = useMemo(() => getNomesAtivos("creche"), []);
+  // Listas completas de itens de cada categoria (fonte unica: catalogo)
+  const itensPorCategoria = useMemo<Record<CategoriaTab, string[]>>(
+    () => ({
+      papelaria: getNomesAtivos("papelaria"),
+      cozinha: getNomesAtivos("cozinha"),
+      creche: getNomesAtivos("creche"),
+    }),
+    [],
+  );
 
-  const addPapelaria = () => setPapelaria([...papelaria, { id: Date.now(), tipo: "", quantidade: 0 }]);
-  const removePapelaria = (id: number) => { if (papelaria.length > 1) setPapelaria(papelaria.filter(p => p.id !== id)); };
-  const incrementPapelaria = (id: number) => setPapelaria(papelaria.map(p => p.id === id ? { ...p, quantidade: p.quantidade + 1 } : p));
-  const decrementPapelaria = (id: number) => setPapelaria(papelaria.map(p => p.id === id ? { ...p, quantidade: Math.max(0, p.quantidade - 1) } : p));
-  
-  const addCozinha = () => setCozinha([...cozinha, { id: Date.now(), tipo: "", quantidade: 0 }]);
-  const removeCozinha = (id: number) => { if (cozinha.length > 1) setCozinha(cozinha.filter(c => c.id !== id)); };
-  const incrementCozinha = (id: number) => setCozinha(cozinha.map(c => c.id === id ? { ...c, quantidade: c.quantidade + 1 } : c));
-  const decrementCozinha = (id: number) => setCozinha(cozinha.map(c => c.id === id ? { ...c, quantidade: Math.max(0, c.quantidade - 1) } : c));
+  const chave = (cat: CategoriaTab, item: string) => `${cat}::${item}`;
+  const getQtd = (cat: CategoriaTab, item: string) => quantidades[chave(cat, item)] || 0;
 
-  const addCreche = () => setCreche([...creche, { id: Date.now(), tipo: "", quantidade: 0 }]);
-  const removeCreche = (id: number) => { if (creche.length > 1) setCreche(creche.filter(c => c.id !== id)); };
-  const incrementCreche = (id: number) => setCreche(creche.map(c => c.id === id ? { ...c, quantidade: c.quantidade + 1 } : c));
-  const decrementCreche = (id: number) => setCreche(creche.map(c => c.id === id ? { ...c, quantidade: Math.max(0, c.quantidade - 1) } : c));
+  const setQtd = (cat: CategoriaTab, item: string, valor: number) => {
+    const q = Math.max(0, valor);
+    setQuantidades((prev) => ({ ...prev, [chave(cat, item)]: q }));
+  };
+  const increment = (cat: CategoriaTab, item: string) => setQtd(cat, item, getQtd(cat, item) + 1);
+  const decrement = (cat: CategoriaTab, item: string) => setQtd(cat, item, getQtd(cat, item) - 1);
 
-  const itensFiltradosPapelaria = papelaria.filter(p => p.tipo && p.quantidade > 0);
-  const itensFiltradosCozinha = cozinha.filter(c => c.tipo && c.quantidade > 0);
-  const itensFiltradosCreche = creche.filter(c => c.tipo && c.quantidade > 0);
+  // Contagem de itens selecionados por categoria
+  const contarSelecionados = (cat: CategoriaTab) =>
+    itensPorCategoria[cat].filter((item) => getQtd(cat, item) > 0).length;
+
+  const totalSelecionados =
+    contarSelecionados("papelaria") + contarSelecionados("cozinha") + contarSelecionados("creche");
+
+  // Itens filtrados pela busca (apenas da aba ativa)
+  const itensVisiveis = useMemo(() => {
+    const termo = busca.trim().toLowerCase();
+    const lista = itensPorCategoria[abaAtiva];
+    if (!termo) return lista;
+    return lista.filter((item) => item.toLowerCase().includes(termo));
+  }, [busca, abaAtiva, itensPorCategoria]);
+
+  // Constroi a lista final de itens selecionados de uma categoria
+  const construirSelecionados = (cat: CategoriaTab): ItemSelecionado[] =>
+    itensPorCategoria[cat]
+      .filter((item) => getQtd(cat, item) > 0)
+      .map((item) => ({ tipo: item, quantidade: getQtd(cat, item) }));
 
   const getDadosComprovante = (numSol: string) => {
     const dataHora = new Date().toLocaleString("pt-BR");
     const itensComprovante = [
-      ...itensFiltradosPapelaria.map(p => ({ descricao: p.tipo, quantidade: p.quantidade })),
-      ...itensFiltradosCozinha.map(c => ({ descricao: c.tipo, quantidade: c.quantidade })),
-      ...itensFiltradosCreche.map(c => ({ descricao: c.tipo, quantidade: c.quantidade })),
-    ];
+      ...construirSelecionados("papelaria"),
+      ...construirSelecionados("cozinha"),
+      ...construirSelecionados("creche"),
+    ].map((i) => ({ descricao: i.tipo, quantidade: i.quantidade }));
     return { tipo: "almoxarifado", nome, matricula, instituicao, dataHora, itens: itensComprovante, numeroSolicitacao: numSol };
   };
 
   const handleFinalizar = () => {
-    if (!nome || !matricula || !instituicao) { alert("Preencha todos os dados do solicitante"); return; }
-    const temItens = itensFiltradosPapelaria.length > 0 || itensFiltradosCozinha.length > 0 || itensFiltradosCreche.length > 0;
-    if (!temItens) { alert("Adicione pelo menos um item com quantidade maior que zero"); return; }
+    if (!nome || !matricula || !instituicao) {
+      alert("Preencha todos os dados do solicitante");
+      return;
+    }
+    if (totalSelecionados === 0) {
+      alert("Informe a quantidade de pelo menos um item");
+      return;
+    }
     const novoNumero = gerarNumeroSolicitacao();
     setNumeroSolicitacao(novoNumero);
     setModalAberto(true);
@@ -78,37 +122,40 @@ export default function AlmoxarifadoPage() {
   };
 
   const handleConfirmarEnvio = async () => {
-    await addSolicitacao({
-      tipo: "almoxarifado",
-      nome,
-      matricula,
-      instituicao,
-      dados: {
-        papelaria: itensFiltradosPapelaria,
-        cozinha: itensFiltradosCozinha,
-        creche: itensFiltradosCreche,
+    await addSolicitacao(
+      {
+        tipo: "almoxarifado",
+        nome,
+        matricula,
+        instituicao,
+        dados: {
+          papelaria: construirSelecionados("papelaria"),
+          cozinha: construirSelecionados("cozinha"),
+          creche: construirSelecionados("creche"),
+        },
       },
-    }, numeroSolicitacao);
+      numeroSolicitacao,
+    );
     setModalAberto(false);
     alert("Solicitacao finalizada");
     router.push("/");
   };
 
+  const selecionadosPapelaria = construirSelecionados("papelaria");
+  const selecionadosCozinha = construirSelecionados("cozinha");
+  const selecionadosCreche = construirSelecionados("creche");
+
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-
       {/* HEADER */}
       <div className="bg-[#111c44] text-white py-4 px-6 flex items-center justify-center gap-3">
         <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
           <Package className="w-5 h-5" />
         </div>
-        <h1 className="text-lg font-bold tracking-wide">
-          SOLICITAR ALMOXARIFADO
-        </h1>
+        <h1 className="text-lg font-bold tracking-wide">SOLICITAR ALMOXARIFADO</h1>
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-8">
-
         {/* VOLTAR */}
         <Link
           href="/"
@@ -122,9 +169,7 @@ export default function AlmoxarifadoPage() {
           <div className="px-6 py-4">
             <div className="flex items-center gap-2 mb-5">
               <span className="w-2 h-2 rounded-full bg-[#3b82f6]" />
-              <h2 className="text-base font-semibold text-[#1e293b]">
-                Dados do Solicitante
-              </h2>
+              <h2 className="text-base font-semibold text-[#1e293b]">Dados do Solicitante</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -149,17 +194,15 @@ export default function AlmoxarifadoPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm text-[#475569]">
-                  Instituição
-                </label>
+                <label className="text-sm text-[#475569]">Instituição</label>
                 <Select value={instituicao} onValueChange={setInstituicao}>
                   <SelectTrigger className="h-11 text-sm border-[#e2e8f0]">
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
-{getInstituicoesAtivas().map((inst) => (
-<SelectItem key={inst} value={inst}>
-{inst}
+                    {getInstituicoesAtivas().map((inst) => (
+                      <SelectItem key={inst} value={inst}>
+                        {inst}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -169,332 +212,132 @@ export default function AlmoxarifadoPage() {
           </div>
         </div>
 
-        {/* PAPELARIA */}
+        {/* ABAS DE CATEGORIA */}
+        <div className="mb-4 bg-white rounded-xl border border-[#e2e8f0] p-1.5 shadow-sm">
+          <div className="grid grid-cols-3 gap-1.5">
+            {TABS.map((tab) => {
+              const Icone = tab.icon;
+              const ativa = abaAtiva === tab.id;
+              const qtd = contarSelecionados(tab.id);
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => {
+                    setAbaAtiva(tab.id);
+                    setBusca("");
+                  }}
+                  className={`relative flex flex-col items-center justify-center gap-1.5 rounded-lg py-3 text-sm font-medium transition-colors ${
+                    ativa
+                      ? "bg-[#111c44] text-white"
+                      : "text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#111c44]"
+                  }`}
+                >
+                  <Icone className="w-5 h-5" />
+                  {tab.label}
+                  {qtd > 0 && (
+                    <span
+                      className={`absolute top-1.5 right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold ${
+                        ativa ? "bg-[#0fb992] text-white" : "bg-[#0fb992] text-white"
+                      }`}
+                    >
+                      {qtd}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* LISTA COMPLETA DE ITENS DA ABA ATIVA */}
         <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
           <div className="px-6 py-4">
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#3b82f6]" />
                 <h2 className="text-base font-semibold text-[#1e293b]">
-                  Itens de Papelaria
+                  Itens de {TABS.find((t) => t.id === abaAtiva)?.label}
                 </h2>
               </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={addPapelaria}
-                className="h-9 text-sm border-[#3b82f6] text-[#3b82f6] bg-white hover:bg-[#eff6ff] font-medium"
-              >
-                <Plus className="w-4 h-4 mr-1.5" /> Adicionar item
-              </Button>
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-[#f1f5f9] text-sm text-[#64748b]">
+                {itensVisiveis.length} {itensVisiveis.length === 1 ? "item" : "itens"}
+              </span>
             </div>
 
-            <div className="space-y-4">
-              {papelaria.map((item, i) => (
-                <div key={item.id} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-end">
-                    <div className="space-y-2">
-                      <label className="block text-sm text-[#475569]">Item</label>
-                      <Select
-                        value={item.tipo}
-                        onValueChange={(v) => {
-                          const p = [...papelaria];
-                          p[i].tipo = v;
-                          setPapelaria(p);
-                        }}
-                      >
-                        <SelectTrigger className="h-11 text-sm border-[#e2e8f0] bg-white">
-                          <SelectValue placeholder="Selecione o item" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-60">
-                          {tiposPapelaria.map((t) => (
-                            <SelectItem key={t} value={t} className="text-sm">
-                              {t}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+            {/* BUSCA */}
+            <div className="relative mb-5">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94a3b8]" />
+              <Input
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                placeholder="Buscar item..."
+                className="h-11 pl-9 text-sm border-[#e2e8f0] bg-white placeholder:text-[#94a3b8]"
+              />
+            </div>
 
-                    <div className="space-y-2">
-                      <label className="block text-sm text-[#475569]">Quantidade</label>
-                      <div className="flex items-center gap-1">
+            {/* LISTA */}
+            {itensVisiveis.length === 0 ? (
+              <div className="py-10 text-center text-sm text-[#94a3b8]">
+                Nenhum item encontrado para {'"'}
+                {busca}
+                {'"'}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {itensVisiveis.map((item) => {
+                  const q = getQtd(abaAtiva, item);
+                  return (
+                    <div
+                      key={item}
+                      className={`flex items-center gap-3 rounded-lg border px-3 py-2 transition-colors ${
+                        q > 0 ? "border-[#0fb992] bg-[#0fb992]/5" : "border-[#e2e8f0] bg-white"
+                      }`}
+                    >
+                      <span className="flex-1 text-sm text-[#1e293b] leading-snug">{item}</span>
+                      <div className="flex items-center gap-1 shrink-0">
                         <Button
                           type="button"
                           variant="outline"
                           size="icon"
-                          onClick={() => decrementPapelaria(item.id)}
-                          className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
+                          onClick={() => decrement(abaAtiva, item)}
+                          className="h-9 w-9 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
+                          aria-label={`Diminuir ${item}`}
                         >
                           <Minus className="w-4 h-4" />
                         </Button>
                         <Input
                           type="number"
                           min="0"
-                          value={item.quantidade}
-                          onChange={(e) => {
-                            const p = [...papelaria];
-                            p[i].quantidade = parseInt(e.target.value) || 0;
-                            setPapelaria(p);
-                          }}
-                          className="h-11 w-16 text-sm text-center border-[#e2e8f0] bg-white"
+                          value={q}
+                          onChange={(e) => setQtd(abaAtiva, item, parseInt(e.target.value) || 0)}
+                          className="h-9 w-14 text-sm text-center border-[#e2e8f0] bg-white"
+                          aria-label={`Quantidade de ${item}`}
                         />
                         <Button
                           type="button"
                           variant="outline"
                           size="icon"
-                          onClick={() => incrementPapelaria(item.id)}
-                          className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
+                          onClick={() => increment(abaAtiva, item)}
+                          className="h-9 w-9 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
+                          aria-label={`Aumentar ${item}`}
                         >
                           <Plus className="w-4 h-4" />
                         </Button>
-                        {papelaria.length > 1 && (
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => removePapelaria(item.id)}
-                            className="h-11 w-11 border-[#e2e8f0] text-[#94a3b8] hover:text-red-500 hover:border-red-200 hover:bg-red-50"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        )}
                       </div>
                     </div>
-                  </div>
-                  {i < papelaria.length - 1 && <div className="border-t border-[#f1f5f9] pt-4" />}
-                </div>
-              ))}
-            </div>
-
-            {papelaria.length > 0 && (
-              <div className="mt-4">
-                <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-[#f1f5f9] text-sm text-[#64748b]">
-                  {itensFiltradosPapelaria.length} {itensFiltradosPapelaria.length === 1 ? 'item adicionado' : 'itens adicionados'}
-                </span>
+                  );
+                })}
               </div>
             )}
           </div>
         </div>
 
-        {/* COZINHA */}
-        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
-          <div className="px-6 py-4">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#3b82f6]" />
-                <h2 className="text-base font-semibold text-[#1e293b]">
-                  Itens de Cozinha
-                </h2>
-              </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={addCozinha}
-                className="h-9 text-sm border-[#3b82f6] text-[#3b82f6] bg-white hover:bg-[#eff6ff] font-medium"
-              >
-                <Plus className="w-4 h-4 mr-1.5" /> Adicionar item
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              {cozinha.map((item, i) => (
-                <div key={item.id} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-end">
-                    <div className="space-y-2">
-                      <label className="block text-sm text-[#475569]">Item</label>
-                      <Select
-                        value={item.tipo}
-                        onValueChange={(v) => {
-                          const c = [...cozinha];
-                          c[i].tipo = v;
-                          setCozinha(c);
-                        }}
-                      >
-                        <SelectTrigger className="h-11 text-sm border-[#e2e8f0] bg-white">
-                          <SelectValue placeholder="Selecione o item" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-60">
-                          {tiposCozinha.map((t) => (
-                            <SelectItem key={t} value={t} className="text-sm">
-                              {t}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="block text-sm text-[#475569]">Quantidade</label>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => decrementCozinha(item.id)}
-                          className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </Button>
-                        <Input
-                          type="number"
-                          min="0"
-                          value={item.quantidade}
-                          onChange={(e) => {
-                            const c = [...cozinha];
-                            c[i].quantidade = parseInt(e.target.value) || 0;
-                            setCozinha(c);
-                          }}
-                          className="h-11 w-16 text-sm text-center border-[#e2e8f0] bg-white"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => incrementCozinha(item.id)}
-                          className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </Button>
-                        {cozinha.length > 1 && (
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => removeCozinha(item.id)}
-                            className="h-11 w-11 border-[#e2e8f0] text-[#94a3b8] hover:text-red-500 hover:border-red-200 hover:bg-red-50"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  {i < cozinha.length - 1 && <div className="border-t border-[#f1f5f9] pt-4" />}
-                </div>
-              ))}
-            </div>
-
-            {cozinha.length > 0 && (
-              <div className="mt-4">
-                <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-[#f1f5f9] text-sm text-[#64748b]">
-                  {itensFiltradosCozinha.length} {itensFiltradosCozinha.length === 1 ? 'item adicionado' : 'itens adicionados'}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* CRECHE */}
-        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
-          <div className="px-6 py-4">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#3b82f6]" />
-                <h2 className="text-base font-semibold text-[#1e293b]">
-                  Itens de Creche
-                </h2>
-              </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={addCreche}
-                className="h-9 text-sm border-[#3b82f6] text-[#3b82f6] bg-white hover:bg-[#eff6ff] font-medium"
-              >
-                <Plus className="w-4 h-4 mr-1.5" /> Adicionar item
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              {creche.map((item, i) => (
-                <div key={item.id} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-end">
-                    <div className="space-y-2">
-                      <label className="block text-sm text-[#475569]">Item</label>
-                      <Select
-                        value={item.tipo}
-                        onValueChange={(v) => {
-                          const c = [...creche];
-                          c[i].tipo = v;
-                          setCreche(c);
-                        }}
-                      >
-                        <SelectTrigger className="h-11 text-sm border-[#e2e8f0] bg-white">
-                          <SelectValue placeholder="Selecione o item" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-60">
-                          {tiposCreche.map((t) => (
-                            <SelectItem key={t} value={t} className="text-sm">
-                              {t}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="block text-sm text-[#475569]">Quantidade</label>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => decrementCreche(item.id)}
-                          className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </Button>
-                        <Input
-                          type="number"
-                          min="0"
-                          value={item.quantidade}
-                          onChange={(e) => {
-                            const c = [...creche];
-                            c[i].quantidade = parseInt(e.target.value) || 0;
-                            setCreche(c);
-                          }}
-                          className="h-11 w-16 text-sm text-center border-[#e2e8f0] bg-white"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => incrementCreche(item.id)}
-                          className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </Button>
-                        {creche.length > 1 && (
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => removeCreche(item.id)}
-                            className="h-11 w-11 border-[#e2e8f0] text-[#94a3b8] hover:text-red-500 hover:border-red-200 hover:bg-red-50"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  {i < creche.length - 1 && <div className="border-t border-[#f1f5f9] pt-4" />}
-                </div>
-              ))}
-            </div>
-
-            {creche.length > 0 && (
-              <div className="mt-4">
-                <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-[#f1f5f9] text-sm text-[#64748b]">
-                  {itensFiltradosCreche.length} {itensFiltradosCreche.length === 1 ? 'item adicionado' : 'itens adicionados'}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* BOTÃO FINAL */}
-        <div className="flex justify-center mt-8">
+        {/* RESUMO / BOTAO FINAL */}
+        <div className="flex flex-col items-center gap-3 mt-8">
+          <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-[#f1f5f9] text-sm text-[#64748b]">
+            {totalSelecionados} {totalSelecionados === 1 ? "item selecionado" : "itens selecionados"}
+          </span>
           <Button
             onClick={handleFinalizar}
             className="px-14 h-11 bg-[#111c44] hover:bg-[#0e1735] text-white font-semibold rounded-xl text-sm shadow-lg hover:shadow-xl transition-all duration-300"
@@ -513,49 +356,78 @@ export default function AlmoxarifadoPage() {
                 <h2 className="text-base font-bold text-[#1e293b]">Resumo da Solicitacao</h2>
                 <p className="text-xs text-[#6b7280]">Verifique os dados da sua solicitacao abaixo</p>
               </div>
-              <button onClick={() => setModalAberto(false)} className="text-[#9ca3af] hover:text-[#374151] transition-colors" aria-label="Fechar"><X className="w-5 h-5" /></button>
+              <button
+                onClick={() => setModalAberto(false)}
+                className="text-[#9ca3af] hover:text-[#374151] transition-colors"
+                aria-label="Fechar"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
             <div className="px-5 py-4 space-y-4">
               <div>
                 <h3 className="text-sm font-bold text-[#1e293b] mb-2">Dados do Solicitante</h3>
                 <div className="space-y-1 text-sm text-[#374151]">
-                  <p><span className="font-medium">Nome:</span> {nome}</p>
-                  <p><span className="font-medium">Matricula:</span> {matricula}</p>
-                  <p><span className="font-medium">Instituicao:</span> {instituicao}</p>
-                  <p><span className="font-medium">N. Solicitacao:</span> {numeroSolicitacao}</p>
+                  <p>
+                    <span className="font-medium">Nome:</span> {nome}
+                  </p>
+                  <p>
+                    <span className="font-medium">Matricula:</span> {matricula}
+                  </p>
+                  <p>
+                    <span className="font-medium">Instituicao:</span> {instituicao}
+                  </p>
+                  <p>
+                    <span className="font-medium">N. Solicitacao:</span> {numeroSolicitacao}
+                  </p>
                 </div>
               </div>
-              {itensFiltradosPapelaria.length > 0 && (
+              {selecionadosPapelaria.length > 0 && (
                 <div>
                   <h3 className="text-sm font-bold text-[#1e293b] mb-2">Papelaria</h3>
                   <div className="space-y-1.5">
-                    {itensFiltradosPapelaria.map((item, i) => (
-                      <div key={item.id} className="bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-3 py-2 text-sm text-[#374151]">
-                        <p>{item.tipo} - Quantidade: {item.quantidade}</p>
+                    {selecionadosPapelaria.map((item) => (
+                      <div
+                        key={item.tipo}
+                        className="bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-3 py-2 text-sm text-[#374151]"
+                      >
+                        <p>
+                          {item.tipo} - Quantidade: {item.quantidade}
+                        </p>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
-              {itensFiltradosCozinha.length > 0 && (
+              {selecionadosCozinha.length > 0 && (
                 <div>
                   <h3 className="text-sm font-bold text-[#1e293b] mb-2">Cozinha</h3>
                   <div className="space-y-1.5">
-                    {itensFiltradosCozinha.map((item, i) => (
-                      <div key={item.id} className="bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-3 py-2 text-sm text-[#374151]">
-                        <p>{item.tipo} - Quantidade: {item.quantidade}</p>
+                    {selecionadosCozinha.map((item) => (
+                      <div
+                        key={item.tipo}
+                        className="bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-3 py-2 text-sm text-[#374151]"
+                      >
+                        <p>
+                          {item.tipo} - Quantidade: {item.quantidade}
+                        </p>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
-              {itensFiltradosCreche.length > 0 && (
+              {selecionadosCreche.length > 0 && (
                 <div>
                   <h3 className="text-sm font-bold text-[#1e293b] mb-2">Creche</h3>
                   <div className="space-y-1.5">
-                    {itensFiltradosCreche.map((item, i) => (
-                      <div key={item.id} className="bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-3 py-2 text-sm text-[#374151]">
-                        <p>{item.tipo} - Quantidade: {item.quantidade}</p>
+                    {selecionadosCreche.map((item) => (
+                      <div
+                        key={item.tipo}
+                        className="bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-3 py-2 text-sm text-[#374151]"
+                      >
+                        <p>
+                          {item.tipo} - Quantidade: {item.quantidade}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -565,12 +437,33 @@ export default function AlmoxarifadoPage() {
             <div className="px-5 py-4 border-t border-[#e5e7eb] space-y-3">
               <div className="bg-[#fef9c3] border border-[#d4a017] rounded-lg p-3 flex items-start gap-2.5">
                 <AlertTriangle className="w-4 h-4 text-[#d4a017] shrink-0 mt-0.5" />
-                <p className="text-sm text-[#92400e] font-medium">{"E necessario baixar o PDF antes de confirmar o envio."}</p>
+                <p className="text-sm text-[#92400e] font-medium">
+                  {"E necessario baixar o PDF antes de confirmar o envio."}
+                </p>
               </div>
               <div className="flex items-center justify-center gap-3">
-                <Button variant="outline" onClick={() => setModalAberto(false)} className="px-6 h-10 text-sm font-medium border-[#d1d5db] text-[#374151] bg-white hover:bg-[#f3f4f6]">Voltar</Button>
-                <Button onClick={handleBaixarPDF} className="px-6 h-10 text-sm font-medium bg-[#16a34a] hover:bg-[#15803d] text-white"><Download className="w-4 h-4 mr-2" /> Baixar PDF</Button>
-                <Button onClick={handleConfirmarEnvio} disabled={!pdfBaixado} className={`px-6 h-10 text-sm font-medium text-white disabled:opacity-60 disabled:cursor-not-allowed ${pdfBaixado ? "bg-[#111c44] hover:bg-[#0e1735]" : "bg-[#6b7280] hover:bg-[#4b5563]"}`}>Confirmar Envio</Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setModalAberto(false)}
+                  className="px-6 h-10 text-sm font-medium border-[#d1d5db] text-[#374151] bg-white hover:bg-[#f3f4f6]"
+                >
+                  Voltar
+                </Button>
+                <Button
+                  onClick={handleBaixarPDF}
+                  className="px-6 h-10 text-sm font-medium bg-[#16a34a] hover:bg-[#15803d] text-white"
+                >
+                  <Download className="w-4 h-4 mr-2" /> Baixar PDF
+                </Button>
+                <Button
+                  onClick={handleConfirmarEnvio}
+                  disabled={!pdfBaixado}
+                  className={`px-6 h-10 text-sm font-medium text-white disabled:opacity-60 disabled:cursor-not-allowed ${
+                    pdfBaixado ? "bg-[#111c44] hover:bg-[#0e1735]" : "bg-[#6b7280] hover:bg-[#4b5563]"
+                  }`}
+                >
+                  Confirmar Envio
+                </Button>
               </div>
             </div>
           </div>
