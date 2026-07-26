@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import {
   LogIn,
   Shirt,
@@ -58,8 +57,6 @@ const menuItemsRight = [
 ];
 
 export default function HomePage() {
-  const router = useRouter();
-
   // Login modal state
   const [showLogin, setShowLogin] = useState(false);
   const [loginUsuario, setLoginUsuario] = useState("");
@@ -81,8 +78,10 @@ export default function HomePage() {
       });
 
       if (response.ok) {
-        router.push("/admin");
-        router.refresh();
+        // Navegacao "dura" para garantir que o cookie de sessao recem-criado
+        // seja enviado e o middleware libere o acesso ao painel (evita o cache
+        // de redirecionamento do router do Next.js em rotas protegidas).
+        window.location.href = "/admin";
       } else {
         setLoginErro("Usuario ou senha incorretos");
       }
