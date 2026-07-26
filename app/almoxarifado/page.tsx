@@ -15,6 +15,8 @@ import {
   FileText,
   UtensilsCrossed,
   Baby,
+  ClipboardList,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -76,6 +78,12 @@ export default function AlmoxarifadoPage() {
 
   const totalSelecionados =
     contarSelecionados("papelaria") + contarSelecionados("cozinha") + contarSelecionados("creche");
+
+  // Soma total de unidades (todas as categorias)
+  const totalUnidades = useMemo(
+    () => Object.values(quantidades).reduce((soma, q) => soma + (q || 0), 0),
+    [quantidades],
+  );
 
   // Itens filtrados pela busca (apenas da aba ativa)
   const itensVisiveis = useMemo(() => {
@@ -145,58 +153,66 @@ export default function AlmoxarifadoPage() {
   const selecionadosCozinha = construirSelecionados("cozinha");
   const selecionadosCreche = construirSelecionados("creche");
 
+  const abaLabel = TABS.find((t) => t.id === abaAtiva)?.label;
+
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
+    <div className="min-h-screen bg-[#f1f5f9] pb-28">
       {/* HEADER */}
-      <div className="bg-[#111c44] text-white py-4 px-6 flex items-center justify-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-          <Package className="w-5 h-5" />
+      <header className="sticky top-0 z-30 bg-gradient-to-r from-[#0e1735] via-[#111c44] to-[#16225a] text-white shadow-lg">
+        <div className="max-w-4xl mx-auto px-4 h-16 flex items-center gap-3">
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+            aria-label="Voltar"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Link>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-[#0fb992]/25 flex items-center justify-center">
+              <Package className="w-5 h-5 text-[#22d3ab]" />
+            </div>
+            <div className="leading-tight">
+              <h1 className="text-base font-bold tracking-wide">Solicitar Almoxarifado</h1>
+              <p className="text-xs text-white/60">Selecione os itens e informe as quantidades</p>
+            </div>
+          </div>
         </div>
-        <h1 className="text-lg font-bold tracking-wide">SOLICITAR ALMOXARIFADO</h1>
-      </div>
+      </header>
 
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        {/* VOLTAR */}
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-[#111c44] mb-6 hover:underline text-sm font-medium"
-        >
-          <ArrowLeft className="w-4 h-4" /> Voltar
-        </Link>
-
+      <div className="max-w-4xl mx-auto px-4 py-6">
         {/* DADOS DO SOLICITANTE */}
-        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
-          <div className="px-6 py-4">
+        <section className="mb-6 bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
+          <div className="px-6 py-5">
             <div className="flex items-center gap-2 mb-5">
-              <span className="w-2 h-2 rounded-full bg-[#3b82f6]" />
-              <h2 className="text-base font-semibold text-[#1e293b]">Dados do Solicitante</h2>
+              <ClipboardList className="w-4 h-4 text-[#111c44]" />
+              <h2 className="text-sm font-semibold text-[#1e293b]">Dados do Solicitante</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div className="space-y-2">
-                <label className="text-sm text-[#475569]">Nome completo</label>
+                <label className="text-xs font-medium text-[#475569]">Nome completo</label>
                 <Input
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
                   placeholder="Digite seu nome"
-                  className="h-11 text-sm border-[#e2e8f0]"
+                  className="h-11 text-sm border-[#e2e8f0] focus-visible:ring-[#0fb992]"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm text-[#475569]">Matrícula</label>
+                <label className="text-xs font-medium text-[#475569]">Matrícula</label>
                 <Input
                   value={matricula}
                   onChange={(e) => setMatricula(e.target.value)}
                   placeholder="Ex: 00123456"
-                  className="h-11 text-sm border-[#e2e8f0]"
+                  className="h-11 text-sm border-[#e2e8f0] focus-visible:ring-[#0fb992]"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm text-[#475569]">Instituição</label>
+                <label className="text-xs font-medium text-[#475569]">Instituição</label>
                 <Select value={instituicao} onValueChange={setInstituicao}>
-                  <SelectTrigger className="h-11 text-sm border-[#e2e8f0]">
+                  <SelectTrigger className="h-11 text-sm border-[#e2e8f0] focus:ring-[#0fb992]">
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
@@ -210,59 +226,61 @@ export default function AlmoxarifadoPage() {
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* ABAS DE CATEGORIA */}
-        <div className="mb-4 bg-white rounded-xl border border-[#e2e8f0] p-1.5 shadow-sm">
-          <div className="grid grid-cols-3 gap-1.5">
-            {TABS.map((tab) => {
-              const Icone = tab.icon;
-              const ativa = abaAtiva === tab.id;
-              const qtd = contarSelecionados(tab.id);
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => {
-                    setAbaAtiva(tab.id);
-                    setBusca("");
-                  }}
-                  className={`relative flex flex-col items-center justify-center gap-1.5 rounded-lg py-3 text-sm font-medium transition-colors ${
-                    ativa
-                      ? "bg-[#111c44] text-white"
-                      : "text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#111c44]"
-                  }`}
-                >
-                  <Icone className="w-5 h-5" />
-                  {tab.label}
-                  {qtd > 0 && (
-                    <span
-                      className={`absolute top-1.5 right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold ${
-                        ativa ? "bg-[#0fb992] text-white" : "bg-[#0fb992] text-white"
-                      }`}
-                    >
-                      {qtd}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+        {/* ABAS DE CATEGORIA (STICKY) */}
+        <div className="sticky top-16 z-20 -mx-4 px-4 py-3 bg-[#f1f5f9]/90 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl border border-[#e2e8f0] p-1.5 shadow-sm">
+            <div className="grid grid-cols-3 gap-1.5">
+              {TABS.map((tab) => {
+                const Icone = tab.icon;
+                const ativa = abaAtiva === tab.id;
+                const qtd = contarSelecionados(tab.id);
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => {
+                      setAbaAtiva(tab.id);
+                      setBusca("");
+                    }}
+                    className={`relative flex items-center justify-center gap-2 rounded-xl py-3 px-2 text-sm font-medium transition-all duration-200 ${
+                      ativa
+                        ? "bg-[#111c44] text-white shadow-md"
+                        : "text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#111c44]"
+                    }`}
+                  >
+                    <Icone className={`w-4 h-4 ${ativa ? "text-[#22d3ab]" : ""}`} />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                    <span className="sm:hidden">{tab.label}</span>
+                    {qtd > 0 && (
+                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#0fb992] px-1.5 text-xs font-semibold text-white">
+                        {qtd}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
         {/* LISTA COMPLETA DE ITENS DA ABA ATIVA */}
-        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
-          <div className="px-6 py-4">
+        <section className="mt-3 bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
+          <div className="px-6 py-5">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#3b82f6]" />
-                <h2 className="text-base font-semibold text-[#1e293b]">
-                  Itens de {TABS.find((t) => t.id === abaAtiva)?.label}
-                </h2>
+                <h2 className="text-sm font-semibold text-[#1e293b]">Itens de {abaLabel}</h2>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#f1f5f9] text-xs font-medium text-[#64748b]">
+                  {itensVisiveis.length} {itensVisiveis.length === 1 ? "item" : "itens"}
+                </span>
               </div>
-              <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-[#f1f5f9] text-sm text-[#64748b]">
-                {itensVisiveis.length} {itensVisiveis.length === 1 ? "item" : "itens"}
-              </span>
+              {contarSelecionados(abaAtiva) > 0 && (
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-[#0f9a7a]">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  {contarSelecionados(abaAtiva)} selecionado{contarSelecionados(abaAtiva) > 1 ? "s" : ""}
+                </span>
+              )}
             </div>
 
             {/* BUSCA */}
@@ -272,58 +290,71 @@ export default function AlmoxarifadoPage() {
                 value={busca}
                 onChange={(e) => setBusca(e.target.value)}
                 placeholder="Buscar item..."
-                className="h-11 pl-9 text-sm border-[#e2e8f0] bg-white placeholder:text-[#94a3b8]"
+                className="h-11 pl-9 text-sm border-[#e2e8f0] bg-[#f8fafc] focus-visible:ring-[#0fb992] focus-visible:bg-white placeholder:text-[#94a3b8]"
               />
             </div>
 
             {/* LISTA */}
             {itensVisiveis.length === 0 ? (
-              <div className="py-10 text-center text-sm text-[#94a3b8]">
-                Nenhum item encontrado para {'"'}
-                {busca}
-                {'"'}
+              <div className="py-12 flex flex-col items-center text-center">
+                <div className="w-12 h-12 rounded-full bg-[#f1f5f9] flex items-center justify-center mb-3">
+                  <Search className="w-5 h-5 text-[#94a3b8]" />
+                </div>
+                <p className="text-sm text-[#64748b]">
+                  Nenhum item encontrado para {'"'}
+                  {busca}
+                  {'"'}
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {itensVisiveis.map((item) => {
                   const q = getQtd(abaAtiva, item);
+                  const ativo = q > 0;
                   return (
                     <div
                       key={item}
-                      className={`flex items-center gap-3 rounded-lg border px-3 py-2 transition-colors ${
-                        q > 0 ? "border-[#0fb992] bg-[#0fb992]/5" : "border-[#e2e8f0] bg-white"
+                      className={`flex items-center gap-3 rounded-xl border pl-4 pr-2 py-2.5 transition-all duration-200 ${
+                        ativo
+                          ? "border-[#0fb992] bg-[#0fb992]/[0.06] shadow-sm"
+                          : "border-[#e2e8f0] bg-white hover:border-[#cbd5e1] hover:bg-[#f8fafc]"
                       }`}
                     >
-                      <span className="flex-1 text-sm text-[#1e293b] leading-snug">{item}</span>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <Button
+                      <span
+                        className={`flex-1 text-sm leading-snug ${
+                          ativo ? "font-medium text-[#0f172a]" : "text-[#334155]"
+                        }`}
+                      >
+                        {item}
+                      </span>
+                      <div className="flex items-center gap-1 shrink-0 rounded-lg bg-[#f1f5f9] p-1">
+                        <button
                           type="button"
-                          variant="outline"
-                          size="icon"
                           onClick={() => decrement(abaAtiva, item)}
-                          className="h-9 w-9 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
+                          disabled={q === 0}
+                          className="flex h-8 w-8 items-center justify-center rounded-md bg-white text-[#475569] shadow-sm transition-colors hover:text-[#111c44] disabled:opacity-40 disabled:cursor-not-allowed"
                           aria-label={`Diminuir ${item}`}
                         >
                           <Minus className="w-4 h-4" />
-                        </Button>
-                        <Input
+                        </button>
+                        <input
                           type="number"
                           min="0"
                           value={q}
                           onChange={(e) => setQtd(abaAtiva, item, parseInt(e.target.value) || 0)}
-                          className="h-9 w-14 text-sm text-center border-[#e2e8f0] bg-white"
+                          className={`h-8 w-12 rounded-md bg-transparent text-sm text-center font-semibold outline-none ${
+                            ativo ? "text-[#0f9a7a]" : "text-[#334155]"
+                          }`}
                           aria-label={`Quantidade de ${item}`}
                         />
-                        <Button
+                        <button
                           type="button"
-                          variant="outline"
-                          size="icon"
                           onClick={() => increment(abaAtiva, item)}
-                          className="h-9 w-9 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
+                          className="flex h-8 w-8 items-center justify-center rounded-md bg-white text-[#111c44] shadow-sm transition-colors hover:bg-[#111c44] hover:text-white"
                           aria-label={`Aumentar ${item}`}
                         >
                           <Plus className="w-4 h-4" />
-                        </Button>
+                        </button>
                       </div>
                     </div>
                   );
@@ -331,16 +362,26 @@ export default function AlmoxarifadoPage() {
               </div>
             )}
           </div>
-        </div>
+        </section>
+      </div>
 
-        {/* RESUMO / BOTAO FINAL */}
-        <div className="flex flex-col items-center gap-3 mt-8">
-          <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-[#f1f5f9] text-sm text-[#64748b]">
-            {totalSelecionados} {totalSelecionados === 1 ? "item selecionado" : "itens selecionados"}
-          </span>
+      {/* BARRA DE ACAO FIXA */}
+      <div className="fixed bottom-0 inset-x-0 z-30 border-t border-[#e2e8f0] bg-white/95 backdrop-blur-sm shadow-[0_-4px_20px_-8px_rgba(0,0,0,0.15)]">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="flex h-9 min-w-9 items-center justify-center rounded-full bg-[#111c44] px-2.5 text-sm font-bold text-white">
+              {totalSelecionados}
+            </span>
+            <div className="leading-tight">
+              <p className="font-medium text-[#1e293b]">
+                {totalSelecionados === 1 ? "item selecionado" : "itens selecionados"}
+              </p>
+              <p className="text-xs text-[#64748b]">{totalUnidades} unidades no total</p>
+            </div>
+          </div>
           <Button
             onClick={handleFinalizar}
-            className="px-14 h-11 bg-[#111c44] hover:bg-[#0e1735] text-white font-semibold rounded-xl text-sm shadow-lg hover:shadow-xl transition-all duration-300"
+            className="px-8 h-11 bg-[#0fb992] hover:bg-[#0f9a7a] text-white font-semibold rounded-xl text-sm shadow-lg hover:shadow-xl transition-all duration-300"
           >
             Finalizar Solicitação
           </Button>
@@ -349,8 +390,8 @@ export default function AlmoxarifadoPage() {
 
       {/* Modal de Confirmacao */}
       {modalAberto && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[85vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto animate-scale-in">
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#e5e7eb]">
               <div>
                 <h2 className="text-base font-bold text-[#1e293b]">Resumo da Solicitacao</h2>
