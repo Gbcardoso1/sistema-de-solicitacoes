@@ -3,7 +3,17 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Plus, Shirt, Download, AlertTriangle, X, Minus } from "lucide-react";
+import {
+  ArrowLeft,
+  Plus,
+  Shirt,
+  Footprints,
+  Download,
+  AlertTriangle,
+  X,
+  Minus,
+  ClipboardList,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -65,6 +75,12 @@ export default function UniformesPage() {
   const calcadosFiltrados = calcados.filter(c => c.quantidade > 0);
   const polosFiltrados = polos.filter(p => p.tamanho && p.quantidade > 0);
 
+  const totalItens = uniformesFiltrados.length + calcadosFiltrados.length + polosFiltrados.length;
+  const totalUnidades =
+    uniformesFiltrados.reduce((a, u) => a + u.quantidade, 0) +
+    calcadosFiltrados.reduce((a, c) => a + c.quantidade, 0) +
+    polosFiltrados.reduce((a, p) => a + p.quantidade, 0);
+
   const getDadosComprovante = () => {
     const dataHora = new Date().toLocaleString("pt-BR");
     const itensComprovante = [
@@ -101,35 +117,51 @@ export default function UniformesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
-      <div className="bg-[#111c44] text-white py-4 px-6 flex items-center justify-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"><Shirt className="w-5 h-5" /></div>
-        <h1 className="text-lg font-bold tracking-wide">SOLICITAR UNIFORMES</h1>
-      </div>
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <Link href="/" className="inline-flex items-center gap-2 text-[#111c44] mb-6 hover:underline text-sm font-medium"><ArrowLeft className="w-4 h-4" /> Voltar</Link>
+    <div className="min-h-screen bg-[#f1f5f9] pb-28">
+      {/* HEADER */}
+      <header className="sticky top-0 z-30 bg-gradient-to-r from-[#0e1735] via-[#111c44] to-[#16225a] text-white shadow-lg">
+        <div className="max-w-4xl mx-auto px-4 h-16 flex items-center gap-3">
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+            aria-label="Voltar"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Link>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-[#0fb992]/25 flex items-center justify-center">
+              <Shirt className="w-5 h-5 text-[#22d3ab]" />
+            </div>
+            <div className="leading-tight">
+              <h1 className="text-base font-bold tracking-wide">Solicitar Uniformes</h1>
+              <p className="text-xs text-white/60">Adicione uniformes, calçados e polos</p>
+            </div>
+          </div>
+        </div>
+      </header>
 
-        {/* Dados do Solicitante */}
-        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
-          <div className="px-6 py-4">
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        {/* DADOS DO SOLICITANTE */}
+        <section className="mb-6 bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
+          <div className="px-6 py-5">
             <div className="flex items-center gap-2 mb-5">
-              <span className="w-2 h-2 rounded-full bg-[#3b82f6]" />
-              <h2 className="text-base font-semibold text-[#1e293b]">Dados do Solicitante</h2>
+              <ClipboardList className="w-4 h-4 text-[#111c44]" />
+              <h2 className="text-sm font-semibold text-[#1e293b]">Dados do Solicitante</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div className="space-y-2">
-                <label className="block text-sm text-[#475569]">Nome completo</label>
-                <Input placeholder="Digite seu nome" value={nome} onChange={(e) => setNome(e.target.value)} className="h-11 text-sm border-[#e2e8f0] bg-white placeholder:text-[#94a3b8]" />
+                <label className="text-xs font-medium text-[#475569]">Nome completo</label>
+                <Input placeholder="Digite seu nome" value={nome} onChange={(e) => setNome(e.target.value)} className="h-11 text-sm border-[#e2e8f0] focus-visible:ring-[#0fb992] placeholder:text-[#94a3b8]" />
               </div>
               <div className="space-y-2">
-                <label className="block text-sm text-[#475569]">Matricula</label>
-                <Input placeholder="Ex: 00123456" value={matricula} onChange={(e) => setMatricula(e.target.value)} className="h-11 text-sm border-[#e2e8f0] bg-white placeholder:text-[#94a3b8]" />
+                <label className="text-xs font-medium text-[#475569]">Matrícula</label>
+                <Input placeholder="Ex: 00123456" value={matricula} onChange={(e) => setMatricula(e.target.value)} className="h-11 text-sm border-[#e2e8f0] focus-visible:ring-[#0fb992] placeholder:text-[#94a3b8]" />
               </div>
               <div className="space-y-2">
-                <label className="block text-sm text-[#475569]">Instituicao de Ensino</label>
+                <label className="text-xs font-medium text-[#475569]">Instituição de Ensino</label>
                 <Select value={instituicao} onValueChange={setInstituicao}>
-                  <SelectTrigger className="h-11 text-sm border-[#e2e8f0] bg-white">
-                    <SelectValue placeholder="Selecione a instituicao" />
+                  <SelectTrigger className="h-11 text-sm border-[#e2e8f0] focus:ring-[#0fb992]">
+                    <SelectValue placeholder="Selecione a instituição" />
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
                     {getInstituicoesAtivas().map(inst => <SelectItem key={inst} value={inst} className="text-sm">{inst}</SelectItem>)}
@@ -138,17 +170,17 @@ export default function UniformesPage() {
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Uniformes */}
-        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
-          <div className="px-6 py-4">
+        <section className="mb-6 bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
+          <div className="px-6 py-5">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#3b82f6]" />
-                <h2 className="text-base font-semibold text-[#1e293b]">Uniformes</h2>
+                <Shirt className="w-4 h-4 text-[#111c44]" />
+                <h2 className="text-sm font-semibold text-[#1e293b]">Uniformes</h2>
               </div>
-              <Button variant="outline" size="sm" onClick={addUniforme} className="h-9 text-sm border-[#3b82f6] text-[#3b82f6] bg-white hover:bg-[#eff6ff] font-medium">
+              <Button variant="outline" size="sm" onClick={addUniforme} className="h-9 text-sm border-[#0fb992] text-[#0f9a7a] bg-white hover:bg-[#0fb992]/[0.08] font-medium">
                 <Plus className="w-4 h-4 mr-1.5" /> Adicionar
               </Button>
             </div>
@@ -157,48 +189,36 @@ export default function UniformesPage() {
                 <div key={uniforme.id}>
                   <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_auto_auto] gap-4 items-end">
                     <div className="space-y-2">
-                      <label className="block text-sm text-[#475569]">Tipo</label>
+                      <label className="block text-xs font-medium text-[#475569]">Tipo</label>
                       <Select value={uniforme.tipo} onValueChange={(v) => { const u = [...uniformes]; u[index].tipo = v; setUniformes(u); }}>
-                        <SelectTrigger className="h-11 text-sm border-[#e2e8f0] bg-white"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectTrigger className="h-11 text-sm border-[#e2e8f0] focus:ring-[#0fb992]"><SelectValue placeholder="Selecione" /></SelectTrigger>
                         <SelectContent>{tiposUniforme.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-sm text-[#475569]">Genero</label>
+                      <label className="block text-xs font-medium text-[#475569]">Gênero</label>
                       <Select value={uniforme.genero} onValueChange={(v) => { const u = [...uniformes]; u[index].genero = v; setUniformes(u); }}>
-                        <SelectTrigger className="h-11 text-sm border-[#e2e8f0] bg-white"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectTrigger className="h-11 text-sm border-[#e2e8f0] focus:ring-[#0fb992]"><SelectValue placeholder="Selecione" /></SelectTrigger>
                         <SelectContent>{generos.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-sm text-[#475569]">Tamanho</label>
+                      <label className="block text-xs font-medium text-[#475569]">Tamanho</label>
                       <Select value={uniforme.tamanho} onValueChange={(v) => { const u = [...uniformes]; u[index].tamanho = v; setUniformes(u); }}>
-                        <SelectTrigger className="h-11 text-sm border-[#e2e8f0] bg-white"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectTrigger className="h-11 text-sm border-[#e2e8f0] focus:ring-[#0fb992]"><SelectValue placeholder="Selecione" /></SelectTrigger>
                         <SelectContent>{tamanhosRoupas.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-sm text-[#475569]">Qtd.</label>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => decrementUniformeQuantidade(uniforme.id)}
-                          className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
-                        >
+                      <label className="block text-xs font-medium text-[#475569]">Qtd.</label>
+                      <div className="flex items-center gap-1 rounded-lg bg-[#f1f5f9] p-1">
+                        <button type="button" onClick={() => decrementUniformeQuantidade(uniforme.id)} disabled={uniforme.quantidade === 0} className="flex h-9 w-9 items-center justify-center rounded-md bg-white text-[#475569] shadow-sm transition-colors hover:text-[#111c44] disabled:opacity-40 disabled:cursor-not-allowed" aria-label="Diminuir">
                           <Minus className="w-4 h-4" />
-                        </Button>
-                        <Input type="number" min="0" value={uniforme.quantidade} onChange={(e) => { const u = [...uniformes]; u[index].quantidade = parseInt(e.target.value) || 0; setUniformes(u); }} className="h-11 w-16 text-sm text-center border-[#e2e8f0] bg-white" />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => incrementUniformeQuantidade(uniforme.id)}
-                          className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
-                        >
+                        </button>
+                        <input type="number" min="0" value={uniforme.quantidade} onChange={(e) => { const u = [...uniformes]; u[index].quantidade = parseInt(e.target.value) || 0; setUniformes(u); }} className={`h-9 w-12 rounded-md bg-transparent text-sm text-center font-semibold outline-none ${uniforme.quantidade > 0 ? "text-[#0f9a7a]" : "text-[#334155]"}`} aria-label="Quantidade" />
+                        <button type="button" onClick={() => incrementUniformeQuantidade(uniforme.id)} className="flex h-9 w-9 items-center justify-center rounded-md bg-white text-[#111c44] shadow-sm transition-colors hover:bg-[#111c44] hover:text-white" aria-label="Aumentar">
                           <Plus className="w-4 h-4" />
-                        </Button>
+                        </button>
                       </div>
                     </div>
                     {uniformes.length > 1 && (
@@ -214,22 +234,22 @@ export default function UniformesPage() {
               ))}
             </div>
             <div className="mt-4">
-              <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-[#f1f5f9] text-sm text-[#64748b]">
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-[#f1f5f9] text-xs font-medium text-[#64748b]">
                 {uniformesFiltrados.length} {uniformesFiltrados.length === 1 ? "item adicionado" : "itens adicionados"}
               </span>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Calcados */}
-        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
-          <div className="px-6 py-4">
+        <section className="mb-6 bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
+          <div className="px-6 py-5">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#3b82f6]" />
-                <h2 className="text-base font-semibold text-[#1e293b]">Calcados</h2>
+                <Footprints className="w-4 h-4 text-[#111c44]" />
+                <h2 className="text-sm font-semibold text-[#1e293b]">Calçados</h2>
               </div>
-              <Button variant="outline" size="sm" onClick={addCalcado} className="h-9 text-sm border-[#3b82f6] text-[#3b82f6] bg-white hover:bg-[#eff6ff] font-medium">
+              <Button variant="outline" size="sm" onClick={addCalcado} className="h-9 text-sm border-[#0fb992] text-[#0f9a7a] bg-white hover:bg-[#0fb992]/[0.08] font-medium">
                 <Plus className="w-4 h-4 mr-1.5" /> Adicionar
               </Button>
             </div>
@@ -238,34 +258,22 @@ export default function UniformesPage() {
                 <div key={calcado.id}>
                   <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-4 items-end">
                     <div className="space-y-2">
-                      <label className="block text-sm text-[#475569]">Tamanho</label>
+                      <label className="block text-xs font-medium text-[#475569]">Tamanho</label>
                       <Select value={calcado.tamanho} onValueChange={(v) => { const c = [...calcados]; c[index].tamanho = v; setCalcados(c); }}>
-                        <SelectTrigger className="h-11 text-sm border-[#e2e8f0] bg-white"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectTrigger className="h-11 text-sm border-[#e2e8f0] focus:ring-[#0fb992]"><SelectValue placeholder="Selecione" /></SelectTrigger>
                         <SelectContent>{tamanhosCalcados.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-sm text-[#475569]">Qtd.</label>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => decrementCalcadoQuantidade(calcado.id)}
-                          className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
-                        >
+                      <label className="block text-xs font-medium text-[#475569]">Qtd.</label>
+                      <div className="flex items-center gap-1 rounded-lg bg-[#f1f5f9] p-1">
+                        <button type="button" onClick={() => decrementCalcadoQuantidade(calcado.id)} disabled={calcado.quantidade === 0} className="flex h-9 w-9 items-center justify-center rounded-md bg-white text-[#475569] shadow-sm transition-colors hover:text-[#111c44] disabled:opacity-40 disabled:cursor-not-allowed" aria-label="Diminuir">
                           <Minus className="w-4 h-4" />
-                        </Button>
-                        <Input type="number" min="0" value={calcado.quantidade} onChange={(e) => { const c = [...calcados]; c[index].quantidade = parseInt(e.target.value) || 0; setCalcados(c); }} className="h-11 w-16 text-sm text-center border-[#e2e8f0] bg-white" />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => incrementCalcadoQuantidade(calcado.id)}
-                          className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
-                        >
+                        </button>
+                        <input type="number" min="0" value={calcado.quantidade} onChange={(e) => { const c = [...calcados]; c[index].quantidade = parseInt(e.target.value) || 0; setCalcados(c); }} className={`h-9 w-12 rounded-md bg-transparent text-sm text-center font-semibold outline-none ${calcado.quantidade > 0 ? "text-[#0f9a7a]" : "text-[#334155]"}`} aria-label="Quantidade" />
+                        <button type="button" onClick={() => incrementCalcadoQuantidade(calcado.id)} className="flex h-9 w-9 items-center justify-center rounded-md bg-white text-[#111c44] shadow-sm transition-colors hover:bg-[#111c44] hover:text-white" aria-label="Aumentar">
                           <Plus className="w-4 h-4" />
-                        </Button>
+                        </button>
                       </div>
                     </div>
                     {calcados.length > 1 && (
@@ -281,22 +289,22 @@ export default function UniformesPage() {
               ))}
             </div>
             <div className="mt-4">
-              <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-[#f1f5f9] text-sm text-[#64748b]">
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-[#f1f5f9] text-xs font-medium text-[#64748b]">
                 {calcadosFiltrados.length} {calcadosFiltrados.length === 1 ? "item adicionado" : "itens adicionados"}
               </span>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Polo Professor */}
-        <div className="mb-6 bg-white rounded-xl border border-[#e2e8f0] border-b border-b-transparent shadow-xl shadow-[#0fb992]/40 overflow-hidden">
-          <div className="px-6 py-4">
+        <section className="mb-6 bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
+          <div className="px-6 py-5">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#3b82f6]" />
-                <h2 className="text-base font-semibold text-[#1e293b]">Polo Professor</h2>
+                <Shirt className="w-4 h-4 text-[#111c44]" />
+                <h2 className="text-sm font-semibold text-[#1e293b]">Polo Professor</h2>
               </div>
-              <Button variant="outline" size="sm" onClick={addPolo} className="h-9 text-sm border-[#3b82f6] text-[#3b82f6] bg-white hover:bg-[#eff6ff] font-medium">
+              <Button variant="outline" size="sm" onClick={addPolo} className="h-9 text-sm border-[#0fb992] text-[#0f9a7a] bg-white hover:bg-[#0fb992]/[0.08] font-medium">
                 <Plus className="w-4 h-4 mr-1.5" /> Adicionar
               </Button>
             </div>
@@ -305,34 +313,22 @@ export default function UniformesPage() {
                 <div key={polo.id}>
                   <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-4 items-end">
                     <div className="space-y-2">
-                      <label className="block text-sm text-[#475569]">Tamanho da Polo</label>
+                      <label className="block text-xs font-medium text-[#475569]">Tamanho da Polo</label>
                       <Select value={polo.tamanho} onValueChange={(v) => { const p = [...polos]; p[index].tamanho = v; setPolos(p); }}>
-                        <SelectTrigger className="h-11 text-sm border-[#e2e8f0] bg-white"><SelectValue placeholder="Selecione o tamanho" /></SelectTrigger>
+                        <SelectTrigger className="h-11 text-sm border-[#e2e8f0] focus:ring-[#0fb992]"><SelectValue placeholder="Selecione o tamanho" /></SelectTrigger>
                         <SelectContent>{tamanhosPolo.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-sm text-[#475569]">Quantidade</label>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => decrementPoloQuantidade(polo.id)}
-                          className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
-                        >
+                      <label className="block text-xs font-medium text-[#475569]">Quantidade</label>
+                      <div className="flex items-center gap-1 rounded-lg bg-[#f1f5f9] p-1">
+                        <button type="button" onClick={() => decrementPoloQuantidade(polo.id)} disabled={polo.quantidade === 0} className="flex h-9 w-9 items-center justify-center rounded-md bg-white text-[#475569] shadow-sm transition-colors hover:text-[#111c44] disabled:opacity-40 disabled:cursor-not-allowed" aria-label="Diminuir">
                           <Minus className="w-4 h-4" />
-                        </Button>
-                        <Input type="number" min="0" value={polo.quantidade} onChange={(e) => { const p = [...polos]; p[index].quantidade = parseInt(e.target.value) || 0; setPolos(p); }} className="h-11 w-16 text-sm text-center border-[#e2e8f0] bg-white" />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => incrementPoloQuantidade(polo.id)}
-                          className="h-11 w-11 border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]"
-                        >
+                        </button>
+                        <input type="number" min="0" value={polo.quantidade} onChange={(e) => { const p = [...polos]; p[index].quantidade = parseInt(e.target.value) || 0; setPolos(p); }} className={`h-9 w-12 rounded-md bg-transparent text-sm text-center font-semibold outline-none ${polo.quantidade > 0 ? "text-[#0f9a7a]" : "text-[#334155]"}`} aria-label="Quantidade" />
+                        <button type="button" onClick={() => incrementPoloQuantidade(polo.id)} className="flex h-9 w-9 items-center justify-center rounded-md bg-white text-[#111c44] shadow-sm transition-colors hover:bg-[#111c44] hover:text-white" aria-label="Aumentar">
                           <Plus className="w-4 h-4" />
-                        </Button>
+                        </button>
                       </div>
                     </div>
                     {polos.length > 1 && (
@@ -348,21 +344,40 @@ export default function UniformesPage() {
               ))}
             </div>
             <div className="mt-4">
-              <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-[#f1f5f9] text-sm text-[#64748b]">
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-[#f1f5f9] text-xs font-medium text-[#64748b]">
                 {polosFiltrados.length} {polosFiltrados.length === 1 ? "item adicionado" : "itens adicionados"}
               </span>
             </div>
           </div>
-        </div>
+        </section>
+      </div>
 
-        <div className="flex justify-center mt-8">
-          <Button onClick={handleFinalizar} className="px-14 h-11 bg-[#111c44] hover:bg-[#0e1735] text-white font-semibold rounded-xl text-sm tracking-wide shadow-lg hover:shadow-xl transition-all duration-300">Finalizar Solicitacao</Button>
+      {/* BARRA DE ACAO FIXA */}
+      <div className="fixed bottom-0 inset-x-0 z-30 border-t border-[#e2e8f0] bg-white/95 backdrop-blur-sm shadow-[0_-4px_20px_-8px_rgba(0,0,0,0.15)]">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="flex h-9 min-w-9 items-center justify-center rounded-full bg-[#111c44] px-2.5 text-sm font-bold text-white">
+              {totalItens}
+            </span>
+            <div className="leading-tight">
+              <p className="font-medium text-[#1e293b]">
+                {totalItens === 1 ? "item adicionado" : "itens adicionados"}
+              </p>
+              <p className="text-xs text-[#64748b]">{totalUnidades} unidades no total</p>
+            </div>
+          </div>
+          <Button
+            onClick={handleFinalizar}
+            className="px-8 h-11 bg-[#0fb992] hover:bg-[#0f9a7a] text-white font-semibold rounded-xl text-sm shadow-lg hover:shadow-xl transition-all duration-300"
+          >
+            Finalizar Solicitação
+          </Button>
         </div>
       </div>
 
       {modalAberto && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[85vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto animate-scale-in">
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#e5e7eb]">
               <div>
                 <h2 className="text-base font-bold text-[#1e293b]">Resumo da Solicitacao</h2>
