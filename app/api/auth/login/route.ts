@@ -1,40 +1,18 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-// Credenciais validas lidas de variaveis de ambiente (nunca ficam no codigo/bundle).
-// Configure no projeto: AUTH_PATRIMONIO_LOGIN, AUTH_PATRIMONIO_SENHA,
-// AUTH_GESTOR_LOGIN, AUTH_GESTOR_SENHA
-function getValidCredentials() {
-  return [
-    {
-      login: process.env.AUTH_PATRIMONIO_LOGIN || "patrimonio",
-      senha: process.env.AUTH_PATRIMONIO_SENHA,
-    },
-    {
-      login: process.env.AUTH_GESTOR_LOGIN || "Gestor",
-      senha: process.env.AUTH_GESTOR_SENHA,
-    },
-  ].filter((cred) => Boolean(cred.senha));
-}
+// Credenciais validas (em producao, isso deve estar em um banco de dados com hash de senha)
+const VALID_CREDENTIALS = [
+  { login: "patrimonio", senha: "#cmpp123" },
+  { login: "Gestor", senha: "#gestor123" },
+];
 
 export async function POST(request: Request) {
   try {
     const { login, senha } = await request.json();
 
-    const validCredentials = getValidCredentials();
-
-    if (validCredentials.length === 0) {
-      console.error(
-        "[v0] Nenhuma credencial configurada. Defina AUTH_PATRIMONIO_SENHA e/ou AUTH_GESTOR_SENHA nas variaveis de ambiente."
-      );
-      return NextResponse.json(
-        { error: "Autenticacao nao configurada no servidor" },
-        { status: 500 }
-      );
-    }
-
     // Verifica se as credenciais sao validas
-    const isValid = validCredentials.some(
+    const isValid = VALID_CREDENTIALS.some(
       (cred) =>
         cred.login.toLowerCase() === login.toLowerCase() && cred.senha === senha
     );
